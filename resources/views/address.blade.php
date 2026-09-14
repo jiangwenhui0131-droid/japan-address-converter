@@ -1078,6 +1078,7 @@
                 value="{{ $inputAddress ?? '' }}"
                 placeholder="例：北海道札幌市中央区大通東"
                 autocomplete="off"
+                required
             >
 
             <button type="submit">
