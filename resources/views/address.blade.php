@@ -939,6 +939,7 @@
                 value="{{ $postalCode ?? '' }}"
                 placeholder="例：060-0041"
                 autocomplete="off"
+                required
             >
 
             <button type="submit">
