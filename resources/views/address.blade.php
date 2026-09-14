@@ -11,7 +11,7 @@
     >
 
     <title>
-        日本住所英語変換｜郵便番号・住所を英語表記に変換
+        日本住所変換ツール｜郵便番号・住所を英語表記に変換
     </title>
 
     <meta
@@ -26,7 +26,7 @@
 
     <meta
         property="og:title"
-        content="日本住所英語変換｜郵便番号・住所を英語表記に変換"
+        content="日本住所変換ツール｜郵便番号・住所を英語表記に変換"
     >
 
     <meta
@@ -56,30 +56,21 @@
 
     <meta
         name="twitter:title"
-        content="日本住所英語変換｜郵便番号・住所を英語表記に変換"
+        content="日本住所変換ツール｜郵便番号・住所を英語表記に変換"
     >
 
     <meta
         name="twitter:description"
-        content="日本の郵便番号や住所を海外向けの英語表記に変換できます。郵便番号検索、日本語住所検索、CSVによる住所一括変換に対応しています。"
-    >
-
-    <meta
-        http-equiv="Cache-Control"
-        content="no-store, no-cache, must-revalidate, max-age=0"
-    >
-
-    <meta
-        http-equiv="Pragma"
-        content="no-cache"
-    >
-
-    <meta
-        http-equiv="Expires"
-        content="0"
+        content="日本の郵便番号や住所を海外向けの英語表記に変換できます。"
     >
 
     <style>
+
+        /*
+         * ============================================================
+         * 基本設定
+         * ============================================================
+         */
 
         * {
             box-sizing: border-box;
@@ -111,7 +102,7 @@
 
         /*
          * ============================================================
-         * メインコンテナ
+         * メイン
          * ============================================================
          */
 
@@ -119,7 +110,7 @@
             width: 100%;
             max-width: 900px;
             margin: 0 auto;
-            padding: 55px 20px 30px;
+            padding: 50px 20px 30px;
         }
 
         /*
@@ -129,7 +120,7 @@
          */
 
         .site-header {
-            margin-bottom: 38px;
+            margin-bottom: 28px;
             text-align: center;
         }
 
@@ -143,7 +134,7 @@
         }
 
         .description {
-            max-width: 620px;
+            max-width: 650px;
             margin: 0 auto;
             color: #68737d;
             font-size: 15px;
@@ -152,7 +143,41 @@
 
         /*
          * ============================================================
-         * エラーメッセージ
+         * 広告エリア
+         *
+         * 将来 Google AdSense をここに入れる
+         *
+         * 広告がまだない状態でもページレイアウトが
+         * 大きく崩れないようにしている。
+         * ============================================================
+         */
+
+        .ad-area {
+            width: 100%;
+            margin: 0 auto 26px;
+            text-align: center;
+        }
+
+        .ad-label {
+            margin-bottom: 7px;
+            color: #a0a6ac;
+            font-size: 10px;
+            line-height: 1.4;
+            letter-spacing: 0.05em;
+        }
+
+        .adsense-slot {
+            width: 100%;
+            min-height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /*
+         * ============================================================
+         * エラー
          * ============================================================
          */
 
@@ -169,7 +194,7 @@
 
         /*
          * ============================================================
-         * 各機能カード
+         * 機能カード
          * ============================================================
          */
 
@@ -546,8 +571,8 @@
          */
 
         .site-footer {
-            margin-top: 35px;
-            padding: 24px 15px 10px;
+            margin-top: 32px;
+            padding: 25px 15px 10px;
             text-align: center;
             color: #888f96;
             font-size: 13px;
@@ -599,6 +624,10 @@
                 padding: 26px;
             }
 
+            .adsense-slot {
+                min-height: 80px;
+            }
+
         }
 
         /*
@@ -608,10 +637,6 @@
          */
 
         @media (max-width: 600px) {
-
-            body {
-                background: #f4f6f8;
-            }
 
             .container {
                 width: 100%;
@@ -624,7 +649,7 @@
              */
 
             .site-header {
-                margin-bottom: 26px;
+                margin-bottom: 24px;
                 padding: 0 8px;
             }
 
@@ -637,6 +662,22 @@
             .description {
                 font-size: 14px;
                 line-height: 1.7;
+            }
+
+            /*
+             * 広告
+             */
+
+            .ad-area {
+                margin-bottom: 20px;
+            }
+
+            .ad-label {
+                font-size: 9px;
+            }
+
+            .adsense-slot {
+                min-height: 70px;
             }
 
             /*
@@ -794,6 +835,7 @@
             .footer-links {
                 gap: 3px;
                 font-size: 12px;
+                line-height: 1.8;
             }
 
             .copyright {
@@ -834,9 +876,11 @@
 
 </head>
 
+
 <body>
 
 <div class="container">
+
 
     <!-- ============================================================
          ヘッダー
@@ -856,13 +900,47 @@
 
 
     <!-- ============================================================
+         広告エリア①
+         ヘッダー下
+         ============================================================ -->
+
+    <div class="ad-area">
+
+        <div class="ad-label">
+            広告
+        </div>
+
+        <div class="adsense-slot">
+
+            <!--
+                Google AdSense の広告コードを
+                将来ここに入れる。
+
+                例：
+
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-XXXXXXXXXXXX"
+                     data-ad-slot="XXXXXXXXXX"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+            -->
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
          エラーメッセージ
          ============================================================ -->
 
     @if (session('csv_error'))
 
         <div class="error-message">
+
             {{ session('csv_error') }}
+
         </div>
 
     @endif
@@ -901,8 +979,6 @@
         </form>
 
 
-        <!-- 検索結果 -->
-
         @if (
             isset($postalCode)
             && ($searchType ?? '') === 'postal'
@@ -920,8 +996,6 @@
 
                         <div class="result-card">
 
-                            <!-- 日本語住所 -->
-
                             <div class="result-row">
 
                                 <div class="result-label">
@@ -937,8 +1011,6 @@
                             </div>
 
 
-                            <!-- ローマ字表記 -->
-
                             <div class="result-row">
 
                                 <div class="result-label">
@@ -953,8 +1025,6 @@
 
                             </div>
 
-
-                            <!-- 海外向け住所 -->
 
                             <div class="result-row">
 
@@ -1040,8 +1110,6 @@
         </form>
 
 
-        <!-- 検索結果 -->
-
         @if (
             isset($inputAddress)
             && ($searchType ?? '') === 'address'
@@ -1059,8 +1127,6 @@
 
                         <div class="result-card">
 
-                            <!-- 日本語住所 -->
-
                             <div class="result-row">
 
                                 <div class="result-label">
@@ -1076,8 +1142,6 @@
                             </div>
 
 
-                            <!-- ローマ字表記 -->
-
                             <div class="result-row">
 
                                 <div class="result-label">
@@ -1092,8 +1156,6 @@
 
                             </div>
 
-
-                            <!-- 海外向け住所 -->
 
                             <div class="result-row">
 
@@ -1147,6 +1209,29 @@
 
 
     <!-- ============================================================
+         広告エリア②
+         2つの検索機能の間
+         ============================================================ -->
+
+    <div class="ad-area">
+
+        <div class="ad-label">
+            広告
+        </div>
+
+        <div class="adsense-slot">
+
+            <!--
+                Google AdSense 広告コードを
+                将来ここに入れる。
+            -->
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
          CSV一括変換
          ============================================================ -->
 
@@ -1163,8 +1248,6 @@
         </p>
 
 
-        <!-- CSV形式の例 -->
-
         <div class="csv-example">
 
             <p class="csv-example-title">
@@ -1177,8 +1260,6 @@
 
         </div>
 
-
-        <!-- CSVアップロード -->
 
         <form
             action="{{ secure_url('/convert-csv') }}"
@@ -1207,8 +1288,6 @@
         </form>
 
 
-        <!-- CSV変換結果 -->
-
         @if (isset($csvResults))
 
             <div class="result-area">
@@ -1230,8 +1309,6 @@
 
 
                 @if (count($csvResults) > 0)
-
-                    <!-- CSV結果テーブル -->
 
                     <div class="csv-table-wrapper">
 
@@ -1256,7 +1333,6 @@
                                 </tr>
 
                             </thead>
-
 
                             <tbody>
 
@@ -1286,8 +1362,6 @@
 
                     </div>
 
-
-                    <!-- CSVダウンロード -->
 
                     <form
                         action="{{ secure_url('/download-csv') }}"
@@ -1339,6 +1413,29 @@
             </div>
 
         @endif
+
+    </div>
+
+
+    <!-- ============================================================
+         広告エリア③
+         CSVの下・フッターの上
+         ============================================================ -->
+
+    <div class="ad-area">
+
+        <div class="ad-label">
+            広告
+        </div>
+
+        <div class="adsense-slot">
+
+            <!--
+                Google AdSense 広告コードを
+                将来ここに入れる。
+            -->
+
+        </div>
 
     </div>
 
@@ -1398,21 +1495,34 @@
 
         const text = element.innerText.trim();
 
-        navigator.clipboard.writeText(text)
-            .then(function () {
+        if (
+            navigator.clipboard &&
+            navigator.clipboard.writeText
+        ) {
 
-                alert(
-                    '住所をコピーしました。'
-                );
+            navigator.clipboard.writeText(text)
+                .then(function () {
 
-            })
-            .catch(function () {
+                    alert(
+                        '住所をコピーしました。'
+                    );
 
-                alert(
-                    'コピーに失敗しました。'
-                );
+                })
+                .catch(function () {
 
-            });
+                    alert(
+                        'コピーに失敗しました。'
+                    );
+
+                });
+
+        } else {
+
+            alert(
+                'このブラウザではコピー機能を利用できません。'
+            );
+
+        }
 
     }
 
