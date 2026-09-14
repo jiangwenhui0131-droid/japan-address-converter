@@ -1,0 +1,536 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\PostalCode;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
+class AddressController extends Controller
+{
+    public function index()
+    {
+        // CSV変換結果を1回だけ取得
+        $csvResults = session()->pull('csvResults');
+        $csvCount = session()->pull('csvCount');
+
+        return response()
+            ->view('address', [
+                'csvResults' => $csvResults,
+                'csvCount' => $csvCount,
+            ])
+            ->header(
+                'Cache-Control',
+                'no-store, no-cache, must-revalidate, max-age=0'
+            )
+            ->header(
+                'Pragma',
+                'no-cache'
+            )
+            ->header(
+                'Expires',
+                '0'
+            );
+    }
+
+    /**
+     * 利用規約
+     */
+    public function terms()
+    {
+        return view('terms');
+    }
+
+    /**
+     * プライバシーポリシー
+     */
+    public function privacy()
+    {
+        return view('privacy');
+    }
+
+    /**
+     * お問い合わせ
+     */
+    public function contact()
+    {
+        return view('contact');
+    }
+
+    // 郵便番号から検索
+    public function search(Request $request)
+    {
+        // 郵便番号からハイフンを削除
+        $postalCode = str_replace(
+            '-',
+            '',
+            trim($request->postal_code)
+        );
+
+        // 郵便番号から住所を検索
+        $addresses = PostalCode::where(
+            'postal_code',
+            $postalCode
+        )->get();
+
+        // 海外向け住所を整形
+        foreach ($addresses as $address) {
+            $this->formatAddress($address);
+        }
+
+        return view('address', [
+            'addresses' => $addresses,
+            'postalCode' => $postalCode,
+            'searchType' => 'postal',
+        ]);
+    }
+
+    // 日本語住所から検索
+    public function searchAddress(Request $request)
+    {
+        // 入力値を保存
+        $inputAddress = trim($request->address);
+
+        // 全角スペース・半角スペースを削除
+        $normalizedAddress = str_replace(
+            ['　', ' '],
+            '',
+            $inputAddress
+        );
+
+        /**
+         * 都道府県 + 市区町村 + 町域
+         * を連結して検索する
+         *
+         * 例：
+         * 北海道
+         * + 札幌市中央区
+         * + 大通東
+         *
+         * ↓
+         *
+         * 北海道札幌市中央区大通東
+         */
+        $addresses = PostalCode::whereRaw(
+            "REPLACE(
+                REPLACE(
+                    prefecture || city || town,
+                    '　',
+                    ''
+                ),
+                ' ',
+                ''
+            ) LIKE ?",
+            ['%' . $normalizedAddress . '%']
+        )->get();
+
+        /**
+         * 完全な住所で見つからなかった場合、
+         * 町名だけでも検索する
+         */
+        if ($addresses->isEmpty()) {
+            $addresses = PostalCode::whereRaw(
+                "REPLACE(
+                    REPLACE(
+                        town,
+                        '　',
+                        ''
+                    ),
+                    ' ',
+                    ''
+                ) LIKE ?",
+                ['%' . $normalizedAddress . '%']
+            )->get();
+        }
+
+        // 海外向け住所を整形
+        foreach ($addresses as $address) {
+            $this->formatAddress($address);
+        }
+
+        return view('address', [
+            'addresses' => $addresses,
+            'inputAddress' => $inputAddress,
+            'searchType' => 'address',
+        ]);
+    }
+
+    // CSV一括変換
+    public function convertCsv(Request $request)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
+        ]);
+
+        $file = $request->file('csv_file');
+
+        $handle = fopen(
+            $file->getRealPath(),
+            'r'
+        );
+
+        if ($handle === false) {
+            return back()->with(
+                'csv_error',
+                'CSVファイルを読み込めませんでした。'
+            );
+        }
+
+        $results = [];
+        $rowNumber = 0;
+
+        while (($row = fgetcsv($handle)) !== false) {
+            $rowNumber++;
+
+            // 2列未満の場合はスキップ
+            if (count($row) < 2) {
+                continue;
+            }
+
+            $firstColumn = trim($row[0]);
+            $secondColumn = trim($row[1]);
+
+            /**
+             * ヘッダー行の場合のみスキップ
+             *
+             * 例：
+             * 郵便番号,住所
+             *
+             * postal_code,address
+             *
+             * postcode,address
+             */
+            if (
+                $rowNumber === 1
+                && (
+                    $firstColumn === '郵便番号'
+                    || strtolower($firstColumn) === 'postal_code'
+                    || strtolower($firstColumn) === 'postcode'
+                )
+            ) {
+                continue;
+            }
+
+            /**
+             * 最大10件
+             *
+             * 10件変換したら終了
+             */
+            if (count($results) >= 10) {
+                break;
+            }
+
+            // 郵便番号
+            $postalCode = str_replace(
+                '-',
+                '',
+                $firstColumn
+            );
+
+            // 日本語住所
+            $inputAddress = $secondColumn;
+
+            // 両方空の場合はスキップ
+            if (
+                $postalCode === ''
+                && $inputAddress === ''
+            ) {
+                continue;
+            }
+
+            $postalAddress = null;
+
+            /**
+             * ① 郵便番号で検索
+             */
+            if ($postalCode !== '') {
+                $postalAddress = PostalCode::where(
+                    'postal_code',
+                    $postalCode
+                )->first();
+            }
+
+            /**
+             * ② 郵便番号で見つからなかった場合
+             *    日本語住所で検索
+             */
+            if (
+                !$postalAddress
+                && $inputAddress !== ''
+            ) {
+                $normalizedAddress = str_replace(
+                    ['　', ' '],
+                    '',
+                    $inputAddress
+                );
+
+                /**
+                 * 都道府県 + 市区町村 + 町域
+                 */
+                $postalAddress = PostalCode::whereRaw(
+                    "REPLACE(
+                        REPLACE(
+                            prefecture || city || town,
+                            '　',
+                            ''
+                        ),
+                        ' ',
+                        ''
+                    ) LIKE ?",
+                    ['%' . $normalizedAddress . '%']
+                )->first();
+
+                /**
+                 * 完全な住所で見つからなかった場合、
+                 * 町名だけでも検索
+                 */
+                if (!$postalAddress) {
+                    $postalAddress = PostalCode::whereRaw(
+                        "REPLACE(
+                            REPLACE(
+                                town,
+                                '　',
+                                ''
+                            ),
+                            ' ',
+                            ''
+                        ) LIKE ?",
+                        ['%' . $normalizedAddress . '%']
+                    )->first();
+                }
+            }
+
+            /**
+             * 見つからなかった場合
+             */
+            if (!$postalAddress) {
+                $results[] = [
+                    'postal_code' => $firstColumn,
+                    'address' => $inputAddress,
+                    'international_address' => '変換できませんでした',
+                ];
+
+                continue;
+            }
+
+            /**
+             * 海外向け住所
+             */
+            $internationalTown = $this->formatTown(
+                $postalAddress->town_romaji
+            );
+
+            $internationalCity = $this->formatCity(
+                $postalAddress->city_romaji
+            );
+
+            $internationalPrefecture = $this->formatName(
+                $postalAddress->prefecture_romaji
+            );
+
+            $formattedPostalCode =
+                substr(
+                    $postalAddress->postal_code,
+                    0,
+                    3
+                )
+                . '-'
+                . substr(
+                    $postalAddress->postal_code,
+                    3,
+                    4
+                );
+
+            $internationalAddress =
+                $internationalTown
+                . ', '
+                . $internationalCity
+                . ', '
+                . $internationalPrefecture
+                . ', '
+                . $formattedPostalCode
+                . ', Japan';
+
+            $results[] = [
+                'postal_code' => $formattedPostalCode,
+                'address' => $inputAddress,
+                'international_address' => $internationalAddress,
+            ];
+        }
+
+        fclose($handle);
+
+        /**
+         * CSV変換結果をSessionに一時保存
+         */
+        session()->put(
+            'csvResults',
+            $results
+        );
+
+        session()->put(
+            'csvCount',
+            count($results)
+        );
+
+        /**
+         * POSTページをそのまま表示せず、
+         * 初期ページへリダイレクトする
+         */
+        return redirect('/');
+    }
+
+    // CSVダウンロード
+    public function downloadCsv(Request $request)
+    {
+        $results = $request->input(
+            'results',
+            []
+        );
+
+        if (empty($results)) {
+            return back()->with(
+                'csv_error',
+                'ダウンロードするデータがありません。'
+            );
+        }
+
+        $fileName = 'converted_addresses.csv';
+
+        return new StreamedResponse(
+            function () use ($results) {
+                $handle = fopen(
+                    'php://output',
+                    'w'
+                );
+
+                // Excel用UTF-8 BOM
+                fwrite(
+                    $handle,
+                    "\xEF\xBB\xBF"
+                );
+
+                // ヘッダー
+                fputcsv(
+                    $handle,
+                    [
+                        '郵便番号',
+                        '日本語住所',
+                        '海外向け住所',
+                    ]
+                );
+
+                // データ
+                foreach ($results as $result) {
+                    fputcsv(
+                        $handle,
+                        [
+                            $result['postal_code'] ?? '',
+                            $result['address'] ?? '',
+                            $result['international_address'] ?? '',
+                        ]
+                    );
+                }
+
+                fclose($handle);
+            },
+            200,
+            [
+                'Content-Type' =>
+                    'text/csv; charset=UTF-8',
+                'Content-Disposition' =>
+                    'attachment; filename="' .
+                    $fileName .
+                    '"',
+            ]
+        );
+    }
+
+    /**
+     * 住所情報を海外向け表示用に整形
+     */
+    private function formatAddress($address)
+    {
+        $address->international_town =
+            $this->formatTown(
+                $address->town_romaji
+            );
+
+        $address->international_city =
+            $this->formatCity(
+                $address->city_romaji
+            );
+
+        $address->international_prefecture =
+            $this->formatName(
+                $address->prefecture_romaji
+            );
+
+        $address->formatted_postal_code =
+            substr(
+                $address->postal_code,
+                0,
+                3
+            )
+            . '-'
+            . substr(
+                $address->postal_code,
+                3,
+                4
+            );
+    }
+
+    // 一般的なローマ字表記を整形
+    private function formatName($name)
+    {
+        return ucwords(
+            strtolower(
+                trim($name)
+            )
+        );
+    }
+
+    // 市区町村のローマ字を整形
+    private function formatCity($city)
+    {
+        $city = $this->formatName($city);
+
+        $city = str_replace(
+            ' Shi',
+            '-shi',
+            $city
+        );
+
+        $city = str_replace(
+            ' Ku',
+            '-ku',
+            $city
+        );
+
+        $city = str_replace(
+            ' Gun',
+            '-gun',
+            $city
+        );
+
+        $city = str_replace(
+            ' Cho',
+            '-cho',
+            $city
+        );
+
+        $city = str_replace(
+            ' Mura',
+            '-mura',
+            $city
+        );
+
+        return $city;
+    }
+
+    // 町名のローマ字を整形
+    private function formatTown($town)
+    {
+        return $this->formatName($town);
+    }
+}
