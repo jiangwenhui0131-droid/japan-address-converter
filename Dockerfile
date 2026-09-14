@@ -9,8 +9,6 @@ RUN apt-get update && apt-get install -y \
     pdo_sqlite \
     zip \
     mbstring \
-    && pecl install swoole \
-    && docker-php-ext-enable swoole \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -23,4 +21,4 @@ RUN mkdir -p storage/framework/cache \
     bootstrap/cache
 RUN chmod -R 775 storage bootstrap/cache
 
-CMD php artisan octane:start --server=swoole --host=0.0.0.0 --port=$PORT
+CMD php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
