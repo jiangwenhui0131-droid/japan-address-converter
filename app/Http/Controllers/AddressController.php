@@ -15,10 +15,24 @@ class AddressController extends Controller
         $csvResults = session()->pull('csvResults');
         $csvCount = session()->pull('csvCount');
 
+        // 郵便番号検索結果を1回だけ取得
+        $addresses = session()->pull('addresses');
+        $postalCode = session()->pull('postalCode');
+        $inputAddress = session()->pull('inputAddress');
+        $searchType = session()->pull('searchType');
+
+        // エラーメッセージ
+        $csvError = session()->pull('csv_error');
+
         return response()
             ->view('address', [
                 'csvResults' => $csvResults,
                 'csvCount' => $csvCount,
+                'addresses' => $addresses,
+                'postalCode' => $postalCode,
+                'inputAddress' => $inputAddress,
+                'searchType' => $searchType,
+                'csv_error' => $csvError,
             ])
             ->header(
                 'Cache-Control',
@@ -97,11 +111,24 @@ class AddressController extends Controller
             $this->formatAddress($address);
         }
 
-        return view('address', [
-            'addresses' => $addresses,
-            'postalCode' => $postalCode,
-            'searchType' => 'postal',
-        ]);
+        // 検索結果をSessionに保存
+        session()->put(
+            'addresses',
+            $addresses
+        );
+
+        session()->put(
+            'postalCode',
+            $postalCode
+        );
+
+        session()->put(
+            'searchType',
+            'postal'
+        );
+
+        // 常にトップページへ戻す
+        return redirect('/');
     }
 
     /**
@@ -160,11 +187,24 @@ class AddressController extends Controller
             $this->formatAddress($address);
         }
 
-        return view('address', [
-            'addresses' => $addresses,
-            'inputAddress' => $inputAddress,
-            'searchType' => 'address',
-        ]);
+        // 検索結果をSessionに保存
+        session()->put(
+            'addresses',
+            $addresses
+        );
+
+        session()->put(
+            'inputAddress',
+            $inputAddress
+        );
+
+        session()->put(
+            'searchType',
+            'address'
+        );
+
+        // 常にトップページへ戻す
+        return redirect('/');
     }
 
     /**
@@ -172,7 +212,7 @@ class AddressController extends Controller
      */
     public function convertCsv(Request $request)
     {
-        /*
+        /**
          * ----------------------------------------
          * ① ファイルチェック
          * ----------------------------------------
@@ -181,7 +221,6 @@ class AddressController extends Controller
          * = 131072KB
          * = 128MB
          */
-
         $validator = Validator::make(
             $request->all(),
             [
@@ -214,12 +253,11 @@ class AddressController extends Controller
             );
         }
 
-        /*
+        /**
          * ----------------------------------------
          * ② ファイル取得
          * ----------------------------------------
          */
-
         $file = $request->file('csv_file');
 
         if (!$file || !$file->isValid()) {
@@ -229,14 +267,22 @@ class AddressController extends Controller
             );
         }
 
-        /*
+        /**
          * ----------------------------------------
          * ③ CSVファイルを開く
          * ----------------------------------------
          */
+        $realPath = $file->getRealPath();
 
-        $handle = fopen(
-            $file->getRealPath(),
+        if (!$realPath || !is_file($realPath)) {
+            return back()->with(
+                'csv_error',
+                'CSVファイルを読み込めませんでした。もう一度お試しください。'
+            );
+        }
+
+        $handle = @fopen(
+            $realPath,
             'r'
         );
 
@@ -247,80 +293,92 @@ class AddressController extends Controller
             );
         }
 
-        /*
+        /**
          * ----------------------------------------
          * ④ CSVを読み込み、
          *    実際のデータ件数を確認
          * ----------------------------------------
          */
-
         $rows = [];
         $rowNumber = 0;
 
-        while (($row = fgetcsv($handle)) !== false) {
-            $rowNumber++;
+        try {
+            while (($row = @fgetcsv($handle)) !== false) {
+                $rowNumber++;
 
-            // 2列未満の場合はスキップ
-            if (count($row) < 2) {
-                continue;
-            }
+                // 2列未満の場合はスキップ
+                if (count($row) < 2) {
+                    continue;
+                }
 
-            $firstColumn = trim($row[0]);
-            $secondColumn = trim($row[1]);
-
-            /**
-             * ヘッダー行の場合はスキップ
-             *
-             * 例：
-             * 郵便番号,住所
-             * postal_code,address
-             * postcode,address
-             */
-            if (
-                $rowNumber === 1
-                && (
-                    $firstColumn === '郵便番号'
-                    || strtolower($firstColumn) === 'postal_code'
-                    || strtolower($firstColumn) === 'postcode'
-                )
-            ) {
-                continue;
-            }
-
-            // 両方空の場合はデータとして数えない
-            if (
-                $firstColumn === ''
-                && $secondColumn === ''
-            ) {
-                continue;
-            }
-
-            $rows[] = [
-                'postal_code' => $firstColumn,
-                'address' => $secondColumn,
-            ];
-
-            /*
-             * 101件になった時点で終了
-             */
-            if (count($rows) > 100) {
-                fclose($handle);
-
-                return back()->with(
-                    'csv_error',
-                    'CSV一括変換は100件まで無料です。101件以上の変換については、有料サービスをご利用ください。'
+                $firstColumn = trim(
+                    (string) $row[0]
                 );
+
+                $secondColumn = trim(
+                    (string) $row[1]
+                );
+
+                /**
+                 * ヘッダー行の場合はスキップ
+                 *
+                 * 例：
+                 * 郵便番号,住所
+                 * postal_code,address
+                 * postcode,address
+                 */
+                if (
+                    $rowNumber === 1
+                    && (
+                        $firstColumn === '郵便番号'
+                        || strtolower($firstColumn) === 'postal_code'
+                        || strtolower($firstColumn) === 'postcode'
+                    )
+                ) {
+                    continue;
+                }
+
+                // 両方空の場合はデータとして数えない
+                if (
+                    $firstColumn === ''
+                    && $secondColumn === ''
+                ) {
+                    continue;
+                }
+
+                $rows[] = [
+                    'postal_code' => $firstColumn,
+                    'address' => $secondColumn,
+                ];
+
+                /**
+                 * 101件になった時点で終了
+                 */
+                if (count($rows) > 100) {
+                    fclose($handle);
+
+                    return back()->with(
+                        'csv_error',
+                        'CSV一括変換は100件まで無料です。101件以上の変換については、有料サービスをご利用ください。'
+                    );
+                }
             }
+        } catch (\Throwable $e) {
+            fclose($handle);
+
+            return back()->with(
+                'csv_error',
+                'CSVファイルを読み込めませんでした。ファイルの内容や形式を確認して、もう一度お試しください。'
+            );
         }
 
         fclose($handle);
 
-        /*
+        /**
          * ----------------------------------------
          * ⑤ 件数チェック
          * ----------------------------------------
          */
-
         $csvCount = count($rows);
 
         // 0件の場合
@@ -331,12 +389,11 @@ class AddressController extends Controller
             );
         }
 
-        /*
+        /**
          * ----------------------------------------
          * ⑥ CSV変換
          * ----------------------------------------
          */
-
         $results = [];
 
         foreach ($rows as $row) {
@@ -352,7 +409,7 @@ class AddressController extends Controller
 
             $postalAddress = null;
 
-            /*
+            /**
              * ① 郵便番号で検索
              */
             if ($postalCode !== '') {
@@ -362,7 +419,7 @@ class AddressController extends Controller
                 )->first();
             }
 
-            /*
+            /**
              * ② 郵便番号で見つからなかった場合
              *    日本語住所で検索
              */
@@ -376,7 +433,7 @@ class AddressController extends Controller
                     $inputAddress
                 );
 
-                /*
+                /**
                  * 都道府県 + 市区町村 + 町域
                  */
                 $postalAddress = PostalCode::whereRaw(
@@ -392,7 +449,7 @@ class AddressController extends Controller
                     ['%' . $normalizedAddress . '%']
                 )->first();
 
-                /*
+                /**
                  * 完全な住所で見つからなかった場合、
                  * 町名だけでも検索
                  */
@@ -412,7 +469,7 @@ class AddressController extends Controller
                 }
             }
 
-            /*
+            /**
              * 見つからなかった場合
              */
             if (!$postalAddress) {
@@ -425,7 +482,7 @@ class AddressController extends Controller
                 continue;
             }
 
-            /*
+            /**
              * 海外向け住所
              */
             $internationalTown = $this->formatTown(
@@ -470,12 +527,11 @@ class AddressController extends Controller
             ];
         }
 
-        /*
+        /**
          * ----------------------------------------
          * ⑦ CSV変換結果をSessionに一時保存
          * ----------------------------------------
          */
-
         session()->put(
             'csvResults',
             $results
@@ -486,7 +542,7 @@ class AddressController extends Controller
             count($results)
         );
 
-        /*
+        /**
          * POSTページをそのまま表示せず、
          * 初期ページへリダイレクトする
          */
