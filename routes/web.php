@@ -83,3 +83,7 @@ Route::get('/sitemap.xml', function () {
     return response($xml, 200)
         ->header('Content-Type', 'application/xml; charset=UTF-8');
 });
+
+Route::view('/about', 'about')->name('about');
+
+Route::view('/cooperation', 'cooperation')->name('cooperation');
