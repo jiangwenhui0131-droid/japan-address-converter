@@ -21,8 +21,9 @@ class AddressController extends Controller
         $inputAddress = session()->pull('inputAddress');
         $searchType = session()->pull('searchType');
 
-        // エラーメッセージ
-        $csvError = session()->pull('csv_error');
+        // CSVエラーメッセージ
+        $csvError = session('csv_error');
+        session()->forget('csv_error');
 
         return response()
             ->view('address', [
@@ -269,7 +270,31 @@ class AddressController extends Controller
 
         /**
          * ----------------------------------------
-         * ③ CSVファイルを開く
+         * ③ ファイルサイズを再チェック
+         * ----------------------------------------
+         *
+         * PHP側の制限などでLaravelのmaxチェックを
+         * 通過できないケースも考慮する。
+         */
+        $fileSize = $file->getSize();
+
+        if ($fileSize === false) {
+            return back()->with(
+                'csv_error',
+                'ファイルサイズを確認できませんでした。もう一度お試しください。'
+            );
+        }
+
+        if ($fileSize > 128 * 1024 * 1024) {
+            return back()->with(
+                'csv_error',
+                'ファイルサイズが大きすぎます。128MB以下のファイルをアップロードしてください。'
+            );
+        }
+
+        /**
+         * ----------------------------------------
+         * ④ CSVファイルを開く
          * ----------------------------------------
          */
         $realPath = $file->getRealPath();
@@ -295,8 +320,7 @@ class AddressController extends Controller
 
         /**
          * ----------------------------------------
-         * ④ CSVを読み込み、
-         *    実際のデータ件数を確認
+         * ⑤ CSVを読み込み
          * ----------------------------------------
          */
         $rows = [];
@@ -306,9 +330,22 @@ class AddressController extends Controller
             while (($row = @fgetcsv($handle)) !== false) {
                 $rowNumber++;
 
-                // 2列未満の場合はスキップ
-                if (count($row) < 2) {
+                // 空行をスキップ
+                if (
+                    count($row) === 1
+                    && trim((string) $row[0]) === ''
+                ) {
                     continue;
+                }
+
+                // 2列未満の場合
+                if (count($row) < 2) {
+                    fclose($handle);
+
+                    return back()->with(
+                        'csv_error',
+                        'CSVファイルの形式が正しくありません。1列目に郵便番号、2列目に住所を入力してください。'
+                    );
                 }
 
                 $firstColumn = trim(
@@ -318,6 +355,20 @@ class AddressController extends Controller
                 $secondColumn = trim(
                     (string) $row[1]
                 );
+
+                /**
+                 * BOMを削除
+                 *
+                 * UTF-8 BOM付きCSVの場合、
+                 * 1列目の先頭にBOMが入る場合がある。
+                 */
+                if ($rowNumber === 1) {
+                    $firstColumn = preg_replace(
+                        '/^\xEF\xBB\xBF/',
+                        '',
+                        $firstColumn
+                    );
+                }
 
                 /**
                  * ヘッダー行の場合はスキップ
@@ -333,17 +384,35 @@ class AddressController extends Controller
                         $firstColumn === '郵便番号'
                         || strtolower($firstColumn) === 'postal_code'
                         || strtolower($firstColumn) === 'postcode'
+                        || strtolower($firstColumn) === 'postal code'
                     )
                 ) {
                     continue;
                 }
 
-                // 両方空の場合はデータとして数えない
+                /**
+                 * 両方空の場合はデータとして数えない
+                 */
                 if (
                     $firstColumn === ''
                     && $secondColumn === ''
                 ) {
                     continue;
+                }
+
+                /**
+                 * 1列目も2列目も必要
+                 */
+                if (
+                    $firstColumn === ''
+                    || $secondColumn === ''
+                ) {
+                    fclose($handle);
+
+                    return back()->with(
+                        'csv_error',
+                        'CSVファイルの形式が正しくありません。1列目に郵便番号、2列目に住所を入力してください。'
+                    );
                 }
 
                 $rows[] = [
@@ -376,7 +445,7 @@ class AddressController extends Controller
 
         /**
          * ----------------------------------------
-         * ⑤ 件数チェック
+         * ⑥ 件数チェック
          * ----------------------------------------
          */
         $csvCount = count($rows);
@@ -385,79 +454,62 @@ class AddressController extends Controller
         if ($csvCount === 0) {
             return back()->with(
                 'csv_error',
-                '変換できる住所データがありません。'
+                '変換できる住所データがありません。1列目に郵便番号、2列目に住所を入力してください。'
             );
         }
 
         /**
          * ----------------------------------------
-         * ⑥ CSV変換
+         * ⑦ CSV変換
          * ----------------------------------------
          */
         $results = [];
 
-        foreach ($rows as $row) {
-            $firstColumn = $row['postal_code'];
-            $inputAddress = $row['address'];
+        try {
+            foreach ($rows as $row) {
+                $firstColumn = $row['postal_code'];
+                $inputAddress = $row['address'];
 
-            // 郵便番号
-            $postalCode = str_replace(
-                '-',
-                '',
-                $firstColumn
-            );
-
-            $postalAddress = null;
-
-            /**
-             * ① 郵便番号で検索
-             */
-            if ($postalCode !== '') {
-                $postalAddress = PostalCode::where(
-                    'postal_code',
-                    $postalCode
-                )->first();
-            }
-
-            /**
-             * ② 郵便番号で見つからなかった場合
-             *    日本語住所で検索
-             */
-            if (
-                !$postalAddress
-                && $inputAddress !== ''
-            ) {
-                $normalizedAddress = str_replace(
-                    ['　', ' '],
+                // 郵便番号
+                $postalCode = str_replace(
+                    '-',
                     '',
-                    $inputAddress
+                    $firstColumn
                 );
 
-                /**
-                 * 都道府県 + 市区町村 + 町域
-                 */
-                $postalAddress = PostalCode::whereRaw(
-                    "REPLACE(
-                        REPLACE(
-                            prefecture || city || town,
-                            '　',
-                            ''
-                        ),
-                        ' ',
-                        ''
-                    ) LIKE ?",
-                    ['%' . $normalizedAddress . '%']
-                )->first();
+                $postalAddress = null;
 
                 /**
-                 * 完全な住所で見つからなかった場合、
-                 * 町名だけでも検索
+                 * ① 郵便番号で検索
                  */
-                if (!$postalAddress) {
+                if ($postalCode !== '') {
+                    $postalAddress = PostalCode::where(
+                        'postal_code',
+                        $postalCode
+                    )->first();
+                }
+
+                /**
+                 * ② 郵便番号で見つからなかった場合
+                 *    日本語住所で検索
+                 */
+                if (
+                    !$postalAddress
+                    && $inputAddress !== ''
+                ) {
+                    $normalizedAddress = str_replace(
+                        ['　', ' '],
+                        '',
+                        $inputAddress
+                    );
+
+                    /**
+                     * 都道府県 + 市区町村 + 町域
+                     */
                     $postalAddress = PostalCode::whereRaw(
                         "REPLACE(
                             REPLACE(
-                                town,
+                                prefecture || city || town,
                                 '　',
                                 ''
                             ),
@@ -466,70 +518,94 @@ class AddressController extends Controller
                         ) LIKE ?",
                         ['%' . $normalizedAddress . '%']
                     )->first();
+
+                    /**
+                     * 完全な住所で見つからなかった場合、
+                     * 町名だけでも検索
+                     */
+                    if (!$postalAddress) {
+                        $postalAddress = PostalCode::whereRaw(
+                            "REPLACE(
+                                REPLACE(
+                                    town,
+                                    '　',
+                                    ''
+                                ),
+                                ' ',
+                                ''
+                            ) LIKE ?",
+                            ['%' . $normalizedAddress . '%']
+                        )->first();
+                    }
                 }
-            }
 
-            /**
-             * 見つからなかった場合
-             */
-            if (!$postalAddress) {
-                $results[] = [
-                    'postal_code' => $firstColumn,
-                    'address' => $inputAddress,
-                    'international_address' => '変換できませんでした',
-                ];
+                /**
+                 * 見つからなかった場合
+                 */
+                if (!$postalAddress) {
+                    $results[] = [
+                        'postal_code' => $firstColumn,
+                        'address' => $inputAddress,
+                        'international_address' => '変換できませんでした',
+                    ];
 
-                continue;
-            }
+                    continue;
+                }
 
-            /**
-             * 海外向け住所
-             */
-            $internationalTown = $this->formatTown(
-                $postalAddress->town_romaji
-            );
-
-            $internationalCity = $this->formatCity(
-                $postalAddress->city_romaji
-            );
-
-            $internationalPrefecture = $this->formatName(
-                $postalAddress->prefecture_romaji
-            );
-
-            $formattedPostalCode =
-                substr(
-                    $postalAddress->postal_code,
-                    0,
-                    3
-                )
-                . '-'
-                . substr(
-                    $postalAddress->postal_code,
-                    3,
-                    4
+                /**
+                 * 海外向け住所
+                 */
+                $internationalTown = $this->formatTown(
+                    $postalAddress->town_romaji
                 );
 
-            $internationalAddress =
-                $internationalTown
-                . ', '
-                . $internationalCity
-                . ', '
-                . $internationalPrefecture
-                . ', '
-                . $formattedPostalCode
-                . ', Japan';
+                $internationalCity = $this->formatCity(
+                    $postalAddress->city_romaji
+                );
 
-            $results[] = [
-                'postal_code' => $formattedPostalCode,
-                'address' => $inputAddress,
-                'international_address' => $internationalAddress,
-            ];
+                $internationalPrefecture = $this->formatName(
+                    $postalAddress->prefecture_romaji
+                );
+
+                $formattedPostalCode =
+                    substr(
+                        $postalAddress->postal_code,
+                        0,
+                        3
+                    )
+                    . '-'
+                    . substr(
+                        $postalAddress->postal_code,
+                        3,
+                        4
+                    );
+
+                $internationalAddress =
+                    $internationalTown
+                    . ', '
+                    . $internationalCity
+                    . ', '
+                    . $internationalPrefecture
+                    . ', '
+                    . $formattedPostalCode
+                    . ', Japan';
+
+                $results[] = [
+                    'postal_code' => $formattedPostalCode,
+                    'address' => $inputAddress,
+                    'international_address' => $internationalAddress,
+                ];
+            }
+        } catch (\Throwable $e) {
+            return back()->with(
+                'csv_error',
+                '住所データの変換中にエラーが発生しました。ファイルの内容を確認して、もう一度お試しください。'
+            );
         }
 
         /**
          * ----------------------------------------
-         * ⑦ CSV変換結果をSessionに一時保存
+         * ⑧ CSV変換結果をSessionに一時保存
          * ----------------------------------------
          */
         session()->put(
