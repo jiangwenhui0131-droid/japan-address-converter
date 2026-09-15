@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PostalCode;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AddressController extends Controller
@@ -73,7 +74,9 @@ class AddressController extends Controller
         return view('cooperation');
     }
 
-    // 郵便番号から検索
+    /**
+     * 郵便番号から検索
+     */
     public function search(Request $request)
     {
         // 郵便番号からハイフンを削除
@@ -101,7 +104,9 @@ class AddressController extends Controller
         ]);
     }
 
-    // 日本語住所から検索
+    /**
+     * 日本語住所から検索
+     */
     public function searchAddress(Request $request)
     {
         // 入力値を保存
@@ -117,15 +122,6 @@ class AddressController extends Controller
         /**
          * 都道府県 + 市区町村 + 町域
          * を連結して検索する
-         *
-         * 例：
-         * 北海道
-         * + 札幌市中央区
-         * + 大通東
-         *
-         * ↓
-         *
-         * 北海道札幌市中央区大通東
          */
         $addresses = PostalCode::whereRaw(
             "REPLACE(
@@ -171,15 +167,63 @@ class AddressController extends Controller
         ]);
     }
 
-    // CSV一括変換
+    /**
+     * CSV一括変換
+     */
     public function convertCsv(Request $request)
     {
-        $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt|max:131072',
-        ]);
+        /*
+         * ファイルサイズ・形式チェック
+         *
+         * max:10240 = 10240KB = 10MB
+         */
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'csv_file' => [
+                    'required',
+                    'file',
+                    'mimes:csv,txt',
+                    'max:10240',
+                ],
+            ],
+            [
+                'csv_file.required' =>
+                    'CSVファイルを選択してください。',
 
+                'csv_file.file' =>
+                    '正しいCSVファイルをアップロードしてください。',
+
+                'csv_file.mimes' =>
+                    'CSVまたはTXTファイルをアップロードしてください。',
+
+                'csv_file.max' =>
+                    'ファイルサイズが大きすぎます。10MB以下のファイルをアップロードしてください。',
+            ]
+        );
+
+        if ($validator->fails()) {
+            return back()->with(
+                'csv_error',
+                $validator->errors()->first('csv_file')
+            );
+        }
+
+        /*
+         * アップロードされたファイルを取得
+         */
         $file = $request->file('csv_file');
 
+        if (!$file || !$file->isValid()) {
+            return back()->with(
+                'csv_error',
+                'CSVファイルをアップロードできませんでした。もう一度お試しください。'
+            );
+        }
+
+        /*
+         * CSVファイルを開く
+         */
         $handle = fopen(
             $file->getRealPath(),
             'r'
@@ -193,11 +237,9 @@ class AddressController extends Controller
         }
 
         /*
-         * ----------------------------------------
-         * ① CSVを読み込み、実際のデータ件数を確認
-         * ----------------------------------------
+         * CSVを読み込み、
+         * 実際のデータ件数を確認
          */
-
         $rows = [];
         $rowNumber = 0;
 
@@ -214,11 +256,6 @@ class AddressController extends Controller
 
             /*
              * ヘッダー行の場合はスキップ
-             *
-             * 例：
-             * 郵便番号,住所
-             * postal_code,address
-             * postcode,address
              */
             if (
                 $rowNumber === 1
@@ -231,7 +268,9 @@ class AddressController extends Controller
                 continue;
             }
 
-            // 両方空の場合はデータとして数えない
+            /*
+             * 両方空の場合はデータとして数えない
+             */
             if (
                 $firstColumn === ''
                 && $secondColumn === ''
@@ -243,19 +282,27 @@ class AddressController extends Controller
                 'postal_code' => $firstColumn,
                 'address' => $secondColumn,
             ];
+
+            /*
+             * 101件になった時点で終了
+             */
+            if (count($rows) > 100) {
+                fclose($handle);
+
+                return back()->with(
+                    'csv_error',
+                    'CSV一括変換は100件まで無料です。101件以上の変換については、有料サービスをご利用ください。'
+                );
+            }
         }
 
         fclose($handle);
 
         /*
-         * ----------------------------------------
-         * ② 件数チェック
-         * ----------------------------------------
+         * 件数チェック
          */
-
         $csvCount = count($rows);
 
-        // 0件の場合
         if ($csvCount === 0) {
             return back()->with(
                 'csv_error',
@@ -264,25 +311,8 @@ class AddressController extends Controller
         }
 
         /*
-         * 100件を超えた場合
-         *
-         * 現時点では決済処理はまだ実装しない。
-         * まず「100件を超える場合は有料」という
-         * 制限だけ作る。
+         * CSV変換
          */
-        if ($csvCount > 100) {
-            return back()->with(
-                'csv_error',
-                'CSV一括変換は100件まで無料です。101件以上の変換については、有料サービスをご利用ください。'
-            );
-        }
-
-        /*
-         * ----------------------------------------
-         * ③ CSV変換
-         * ----------------------------------------
-         */
-
         $results = [];
 
         foreach ($rows as $row) {
@@ -351,8 +381,8 @@ class AddressController extends Controller
                                 ''
                             ),
                             ' ',
-                            ''
-                        ) LIKE ?",
+                                ''
+                            ) LIKE ?",
                         ['%' . $normalizedAddress . '%']
                     )->first();
                 }
@@ -417,11 +447,8 @@ class AddressController extends Controller
         }
 
         /*
-         * ----------------------------------------
-         * ④ CSV変換結果をSessionに一時保存
-         * ----------------------------------------
+         * CSV変換結果をSessionに一時保存
          */
-
         session()->put(
             'csvResults',
             $results
@@ -433,13 +460,14 @@ class AddressController extends Controller
         );
 
         /*
-         * POSTページをそのまま表示せず、
-         * 初期ページへリダイレクトする
+         * 初期ページへリダイレクト
          */
         return redirect('/');
     }
 
-    // CSVダウンロード
+    /**
+     * CSVダウンロード
+     */
     public function downloadCsv(Request $request)
     {
         $results = $request->input(
@@ -540,7 +568,9 @@ class AddressController extends Controller
             );
     }
 
-    // 一般的なローマ字表記を整形
+    /**
+     * 一般的なローマ字表記を整形
+     */
     private function formatName($name)
     {
         return ucwords(
@@ -550,7 +580,9 @@ class AddressController extends Controller
         );
     }
 
-    // 市区町村のローマ字を整形
+    /**
+     * 市区町村のローマ字を整形
+     */
     private function formatCity($city)
     {
         $city = $this->formatName($city);
@@ -588,7 +620,9 @@ class AddressController extends Controller
         return $city;
     }
 
-    // 町名のローマ字を整形
+    /**
+     * 町名のローマ字を整形
+     */
     private function formatTown($town)
     {
         return $this->formatName($town);
