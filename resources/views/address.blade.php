@@ -4,7 +4,6 @@
 
 <head>
 
-```
 <meta charset="UTF-8">
 
 <meta
@@ -912,7 +911,7 @@
     }
 
 </style>
-```
+
 
 </head>
 
@@ -920,7 +919,7 @@
 
 <div class="page">
 
-```
+
 <div class="container">
 
 
@@ -1534,12 +1533,12 @@
 
 
                 <div class="csv-example">郵便番号,住所
-```
+
 
 060-0041,北海道札幌市中央区大通東
 080-0111,北海道河東郡音更町木野大通東</div>
 
-```
+
             </div>
 
 
@@ -1958,7 +1957,7 @@
 
 
 </div>
-```
+
 
 </div>
 
