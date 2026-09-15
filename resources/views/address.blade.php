@@ -2,6 +2,7 @@
 <html lang="ja">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -27,6 +28,7 @@
     >
 
     <!-- OGP -->
+
     <meta
         property="og:title"
         content="日本住所英語変換｜郵便番号・住所を英語表記に変換"
@@ -53,6 +55,7 @@
     >
 
     <!-- Twitter -->
+
     <meta
         name="twitter:card"
         content="summary"
@@ -69,65 +72,27 @@
     >
 
     <!-- Google AdSense -->
+
     <script
         async
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9772041946026515"
         crossorigin="anonymous"
     ></script>
 
-    <!-- Structured Data -->
-    <script type="application/ld+json">
-    @json([
-        '@context' => 'https://schema.org',
-        '@type' => 'WebApplication',
-        'name' => '日本住所英語変換',
-        'url' => secure_url('/'),
-        'description' => '日本の郵便番号や住所を海外向けの英語表記に変換できる無料ツールです。',
-        'applicationCategory' => 'UtilitiesApplication',
-        'operatingSystem' => 'Web Browser',
-    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-    </script>
 
     <style>
 
         /* =========================================================
-           Base
+           RESET
         ========================================================= */
-
-        :root {
-            --primary: #111827;
-            --primary-hover: #000000;
-
-            --accent: #16856f;
-            --accent-light: #eaf7f3;
-            --accent-border: #bfe7dc;
-
-            --background: #f5f7f8;
-            --card: #ffffff;
-
-            --text: #17202a;
-            --text-secondary: #667085;
-            --text-light: #98a2b3;
-
-            --border: #e4e7ec;
-            --danger: #d92d20;
-            --success: #16856f;
-
-            --radius: 18px;
-            --radius-small: 12px;
-
-            --shadow:
-                0 8px 30px rgba(16, 24, 40, 0.06);
-
-            --shadow-hover:
-                0 12px 35px rgba(16, 24, 40, 0.10);
-        }
 
         * {
             box-sizing: border-box;
         }
 
         html {
+            margin: 0;
+            padding: 0;
             scroll-behavior: smooth;
         }
 
@@ -135,8 +100,9 @@
             margin: 0;
             padding: 0;
 
-            background: var(--background);
-            color: var(--text);
+            background: #f5f7f8;
+
+            color: #17202a;
 
             font-family:
                 -apple-system,
@@ -169,117 +135,164 @@
             color: inherit;
         }
 
+
+        /* =========================================================
+           VARIABLES
+        ========================================================= */
+
+        :root {
+
+            --black: #111827;
+            --black-hover: #000000;
+
+            --green: #16856f;
+            --green-dark: #126c5b;
+
+            --green-light: #eaf7f3;
+
+            --background: #f5f7f8;
+
+            --white: #ffffff;
+
+            --text: #17202a;
+            --text-secondary: #667085;
+            --text-light: #98a2b3;
+
+            --border: #e4e7ec;
+
+            --danger: #d92d20;
+
+            --radius-large: 20px;
+            --radius: 15px;
+            --radius-small: 11px;
+
+            --shadow:
+                0 8px 30px rgba(16, 24, 40, 0.06);
+        }
+
+
+        /* =========================================================
+           LAYOUT
+        ========================================================= */
+
+        .page {
+            width: 100%;
+        }
+
         .container {
             width: min(900px, calc(100% - 32px));
+
             margin: 0 auto;
         }
 
 
         /* =========================================================
-           Header
+           HEADER
         ========================================================= */
 
-        .site-header {
-            padding: 48px 0 26px;
+        .header {
+            padding: 50px 0 28px;
+
             text-align: center;
         }
 
-        .brand-icon {
-            width: 58px;
-            height: 58px;
+        .logo {
+            width: 64px;
+            height: 64px;
 
-            margin: 0 auto 14px;
+            margin: 0 auto 16px;
 
             display: flex;
             align-items: center;
             justify-content: center;
 
-            border-radius: 18px;
+            border-radius: 20px;
 
-            background: var(--accent-light);
+            background: var(--green-light);
 
-            font-size: 29px;
+            font-size: 32px;
 
             box-shadow:
-                0 6px 20px rgba(22, 133, 111, 0.08);
+                0 8px 24px rgba(22, 133, 111, 0.08);
         }
 
-        .site-title {
+        .title {
             margin: 0;
 
-            font-size: clamp(27px, 4vw, 38px);
-            line-height: 1.3;
+            color: var(--text);
+
+            font-size: clamp(28px, 5vw, 40px);
 
             font-weight: 800;
-            letter-spacing: -0.03em;
+
+            line-height: 1.3;
+
+            letter-spacing: -0.035em;
         }
 
-        .site-description {
+        .subtitle {
             max-width: 620px;
 
-            margin: 12px auto 0;
+            margin: 13px auto 0;
 
             color: var(--text-secondary);
 
             font-size: 15px;
+
+            line-height: 1.7;
         }
 
 
         /* =========================================================
-           Ad Area
+           AD
         ========================================================= */
 
         .ad-area {
             width: 100%;
 
-            margin: 22px 0;
-
-            padding: 8px 0;
+            margin: 18px 0;
         }
 
         .adsense-slot {
             width: 100%;
+
             min-height: 90px;
 
             display: flex;
             align-items: center;
             justify-content: center;
 
-            color: #b0b7c3;
-
-            font-size: 11px;
-
             overflow: hidden;
         }
 
 
         /* =========================================================
-           Main Card
+           TOOL CARD
         ========================================================= */
 
-        .main-card {
-            background: var(--card);
+        .tool-card {
+            overflow: hidden;
+
+            background: var(--white);
 
             border: 1px solid var(--border);
 
-            border-radius: var(--radius);
+            border-radius: var(--radius-large);
 
             box-shadow: var(--shadow);
-
-            overflow: hidden;
         }
 
 
         /* =========================================================
-           Tabs
+           TABS
         ========================================================= */
 
-        .tabs-wrapper {
+        .tabs-area {
             padding: 8px;
 
-            border-bottom: 1px solid var(--border);
-
             background: #fafbfc;
+
+            border-bottom: 1px solid var(--border);
         }
 
         .tabs {
@@ -296,7 +309,7 @@
             display: none;
         }
 
-        .tab-button {
+        .tab {
             flex: 1 0 auto;
 
             min-height: 48px;
@@ -304,6 +317,7 @@
             padding: 10px 18px;
 
             border: 0;
+
             border-radius: 12px;
 
             background: transparent;
@@ -311,11 +325,12 @@
             color: var(--text-secondary);
 
             font-size: 14px;
+
             font-weight: 700;
 
-            cursor: pointer;
-
             white-space: nowrap;
+
+            cursor: pointer;
 
             transition:
                 background 0.2s ease,
@@ -323,16 +338,16 @@
                 transform 0.15s ease;
         }
 
-        .tab-button:hover {
+        .tab:hover {
             background: #f0f2f4;
         }
 
-        .tab-button:active {
+        .tab:active {
             transform: scale(0.98);
         }
 
-        .tab-button.active {
-            background: #ffffff;
+        .tab.active {
+            background: var(--white);
 
             color: var(--text);
 
@@ -342,28 +357,30 @@
 
 
         /* =========================================================
-           Panels
+           PANEL
         ========================================================= */
 
-        .tab-panel {
+        .panel {
             display: none;
 
-            padding: 32px;
+            padding: 34px;
         }
 
-        .tab-panel.active {
+        .panel.active {
             display: block;
         }
 
-        .panel-heading {
-            margin-bottom: 22px;
+        .panel-header {
+            margin-bottom: 23px;
         }
 
         .panel-title {
             margin: 0 0 5px;
 
             font-size: 21px;
+
             font-weight: 800;
+
             line-height: 1.4;
         }
 
@@ -377,68 +394,63 @@
 
 
         /* =========================================================
-           Form
+           FORM
         ========================================================= */
 
         .form-group {
             margin-bottom: 18px;
         }
 
-        .form-label {
+        .label {
             display: block;
 
             margin-bottom: 8px;
 
             font-size: 14px;
+
             font-weight: 700;
         }
 
-        .input-wrapper {
-            position: relative;
-        }
+        .input {
+            display: block;
 
-        .form-input {
             width: 100%;
 
-            min-height: 54px;
+            min-height: 55px;
 
-            padding: 13px 16px;
+            padding: 13px 15px;
 
             border: 1px solid #d0d5dd;
 
             border-radius: 13px;
 
-            outline: none;
-
             background: #ffffff;
 
             color: var(--text);
 
+            outline: none;
+
             font-size: 16px;
+
+            line-height: 1.5;
 
             transition:
                 border-color 0.2s ease,
                 box-shadow 0.2s ease;
         }
 
-        .form-input::placeholder {
+        .input::placeholder {
             color: #a7adb7;
         }
 
-        .form-input:focus {
-            border-color: var(--accent);
+        .input:focus {
+            border-color: var(--green);
 
             box-shadow:
                 0 0 0 4px rgba(22, 133, 111, 0.10);
         }
 
-        textarea.form-input {
-            min-height: 120px;
-
-            resize: vertical;
-        }
-
-        .input-help {
+        .help {
             margin-top: 7px;
 
             color: var(--text-light);
@@ -448,13 +460,13 @@
 
 
         /* =========================================================
-           Buttons
+           PRIMARY BUTTON
         ========================================================= */
 
         .primary-button {
             width: 100%;
 
-            min-height: 54px;
+            min-height: 55px;
 
             padding: 13px 20px;
 
@@ -462,11 +474,12 @@
 
             border-radius: 13px;
 
-            background: var(--primary);
+            background: var(--black);
 
             color: #ffffff;
 
             font-size: 15px;
+
             font-weight: 800;
 
             cursor: pointer;
@@ -481,7 +494,7 @@
         }
 
         .primary-button:hover {
-            background: var(--primary-hover);
+            background: var(--black-hover);
 
             box-shadow:
                 0 8px 20px rgba(17, 24, 39, 0.18);
@@ -499,13 +512,13 @@
 
 
         /* =========================================================
-           Error
+           ERROR
         ========================================================= */
 
         .error-message {
-            margin: 0 0 22px;
+            margin-bottom: 20px;
 
-            padding: 14px 16px;
+            padding: 13px 15px;
 
             border: 1px solid #f3b4ae;
 
@@ -515,24 +528,25 @@
 
             color: var(--danger);
 
-            font-size: 14px;
+            font-size: 13px;
+
             font-weight: 600;
         }
 
 
         /* =========================================================
-           Results
+           RESULTS
         ========================================================= */
 
-        .results-section {
-            margin-top: 26px;
+        .results {
+            margin-top: 28px;
 
             padding-top: 26px;
 
             border-top: 1px solid var(--border);
         }
 
-        .results-heading {
+        .results-header {
             display: flex;
 
             align-items: center;
@@ -546,53 +560,47 @@
         .results-title {
             margin: 0;
 
-            font-size: 17px;
+            font-size: 18px;
+
             font-weight: 800;
         }
 
-        .result-count {
-            display: inline-flex;
-
-            align-items: center;
-            justify-content: center;
-
+        .count {
             min-width: 28px;
             height: 28px;
 
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
             padding: 0 8px;
 
-            border-radius: 99px;
+            border-radius: 999px;
 
-            background: var(--accent-light);
+            background: var(--green-light);
 
-            color: var(--accent);
+            color: var(--green);
 
             font-size: 12px;
+
             font-weight: 800;
         }
 
-        .result-card {
-            position: relative;
 
+        /* =========================================================
+           RESULT CARD
+        ========================================================= */
+
+        .result-card {
             margin-bottom: 14px;
 
             padding: 18px;
 
-            border: 1px solid var(--border);
-
-            border-radius: 14px;
-
             background: #ffffff;
 
-            transition:
-                box-shadow 0.2s ease,
-                border-color 0.2s ease;
-        }
+            border: 1px solid var(--border);
 
-        .result-card:hover {
-            border-color: #d8dde5;
-
-            box-shadow: var(--shadow-hover);
+            border-radius: 15px;
         }
 
         .result-card:last-child {
@@ -605,22 +613,26 @@
             color: var(--text-light);
 
             font-size: 11px;
+
             font-weight: 800;
 
-            letter-spacing: 0.04em;
+            letter-spacing: 0.05em;
         }
 
         .result-japanese {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
+
+            color: var(--text);
 
             font-size: 14px;
+
             font-weight: 600;
 
             word-break: break-all;
         }
 
         .result-romaji {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
 
             color: var(--text-secondary);
 
@@ -629,23 +641,24 @@
             word-break: break-word;
         }
 
-        .international-box {
-            padding: 14px;
+        .international {
+            padding: 15px;
+
+            background: var(--green-light);
+
+            border: 1px solid #bfe7dc;
 
             border-radius: 12px;
-
-            background: var(--accent-light);
-
-            border: 1px solid var(--accent-border);
         }
 
         .international-address {
-            color: #145f51;
+            color: var(--green-dark);
 
             font-size: 15px;
+
             font-weight: 700;
 
-            line-height: 1.65;
+            line-height: 1.7;
 
             word-break: break-word;
         }
@@ -653,9 +666,9 @@
         .copy-button {
             width: 100%;
 
-            min-height: 46px;
+            min-height: 47px;
 
-            margin-top: 13px;
+            margin-top: 12px;
 
             padding: 10px 14px;
 
@@ -668,6 +681,7 @@
             color: var(--text);
 
             font-size: 14px;
+
             font-weight: 800;
 
             cursor: pointer;
@@ -685,34 +699,35 @@
         }
 
         .copy-button.copied {
-            border-color: var(--accent);
+            background: var(--green);
 
-            background: var(--accent);
+            border-color: var(--green);
 
             color: #ffffff;
         }
 
 
         /* =========================================================
-           CSV
+           CSV INFO
         ========================================================= */
 
         .csv-info {
             margin-bottom: 20px;
 
-            padding: 15px;
-
-            border-radius: 13px;
+            padding: 16px;
 
             background: #f8fafc;
 
             border: 1px solid var(--border);
+
+            border-radius: 13px;
         }
 
         .csv-info-title {
             margin: 0 0 5px;
 
             font-size: 14px;
+
             font-weight: 800;
         }
 
@@ -722,12 +737,14 @@
             color: var(--text-secondary);
 
             font-size: 12px;
+
+            line-height: 1.7;
         }
 
         .csv-example {
             margin-top: 12px;
 
-            padding: 12px;
+            padding: 13px;
 
             overflow-x: auto;
 
@@ -752,16 +769,17 @@
             white-space: pre;
         }
 
-        .file-input-wrapper {
-            position: relative;
 
-            margin-bottom: 18px;
-        }
+        /* =========================================================
+           FILE INPUT
+        ========================================================= */
 
         .file-input {
+            display: block;
+
             width: 100%;
 
-            padding: 13px;
+            padding: 15px;
 
             border: 1px dashed #b8c0ca;
 
@@ -771,18 +789,23 @@
 
             color: var(--text-secondary);
 
-            cursor: pointer;
-
             font-size: 13px;
+
+            cursor: pointer;
         }
 
         .file-input:hover {
-            border-color: var(--accent);
+            border-color: var(--green);
 
             background: #f7fcfa;
         }
 
-        .csv-result-wrapper {
+
+        /* =========================================================
+           CSV TABLE
+        ========================================================= */
+
+        .table-scroll {
             margin-top: 20px;
 
             overflow-x: auto;
@@ -790,9 +813,11 @@
             border: 1px solid var(--border);
 
             border-radius: 13px;
+
+            -webkit-overflow-scrolling: touch;
         }
 
-        .csv-result-table {
+        .csv-table {
             width: 100%;
 
             min-width: 650px;
@@ -802,7 +827,7 @@
             font-size: 13px;
         }
 
-        .csv-result-table th {
+        .csv-table th {
             padding: 12px;
 
             background: #f8fafc;
@@ -816,7 +841,7 @@
             white-space: nowrap;
         }
 
-        .csv-result-table td {
+        .csv-table td {
             padding: 12px;
 
             border-bottom: 1px solid var(--border);
@@ -826,29 +851,29 @@
             word-break: break-word;
         }
 
-        .csv-result-table tr:last-child td {
+        .csv-table tr:last-child td {
             border-bottom: 0;
         }
 
-        .csv-download {
+        .download-area {
             margin-top: 16px;
         }
 
 
         /* =========================================================
-           Guide Section
+           GUIDE
         ========================================================= */
 
-        .guide-section {
+        .guide {
             margin-top: 28px;
 
-            padding: 28px;
-
-            border-radius: var(--radius);
+            padding: 30px;
 
             background: #ffffff;
 
             border: 1px solid var(--border);
+
+            border-radius: var(--radius-large);
 
             box-shadow: var(--shadow);
         }
@@ -857,6 +882,7 @@
             margin: 0 0 18px;
 
             font-size: 20px;
+
             font-weight: 800;
         }
 
@@ -868,12 +894,15 @@
 
         .guide-item:last-child {
             border-bottom: 0;
+
+            padding-bottom: 0;
         }
 
         .guide-question {
             margin: 0 0 6px;
 
             font-size: 14px;
+
             font-weight: 800;
         }
 
@@ -883,17 +912,17 @@
             color: var(--text-secondary);
 
             font-size: 13px;
+
+            line-height: 1.8;
         }
 
 
         /* =========================================================
-           Footer
+           FOOTER
         ========================================================= */
 
-        .site-footer {
-            margin-top: 40px;
-
-            padding: 30px 0 45px;
+        .footer {
+            padding: 35px 0 45px;
 
             text-align: center;
 
@@ -910,9 +939,9 @@
 
             flex-wrap: wrap;
 
-            gap: 8px 20px;
+            gap: 10px 22px;
 
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
 
         .footer-links a {
@@ -923,70 +952,67 @@
 
         .footer-links a:hover {
             color: var(--text);
+
             text-decoration: underline;
         }
 
 
         /* =========================================================
-           Mobile
+           MOBILE
         ========================================================= */
 
         @media (max-width: 640px) {
 
             .container {
-                width: min(100% - 20px, 900px);
+                width: calc(100% - 20px);
             }
 
-            .site-header {
+            .header {
                 padding: 28px 0 18px;
             }
 
-            .brand-icon {
-                width: 50px;
-                height: 50px;
+            .logo {
+                width: 52px;
+                height: 52px;
 
-                margin-bottom: 11px;
+                margin-bottom: 12px;
 
-                border-radius: 15px;
+                border-radius: 16px;
 
-                font-size: 25px;
+                font-size: 26px;
             }
 
-            .site-title {
-                font-size: 27px;
+            .title {
+                font-size: 28px;
             }
 
-            .site-description {
+            .subtitle {
                 margin-top: 9px;
 
-                padding: 0 8px;
+                padding: 0 6px;
 
                 font-size: 13px;
 
-                line-height: 1.65;
+                line-height: 1.7;
             }
 
             .ad-area {
-                margin: 15px 0;
+                margin: 12px 0;
             }
 
             .adsense-slot {
                 min-height: 70px;
             }
 
-            .main-card {
-                border-radius: 15px;
+            .tool-card {
+                border-radius: 16px;
             }
 
-            .tabs-wrapper {
+            .tabs-area {
                 padding: 6px;
             }
 
-            .tabs {
-                gap: 4px;
-            }
-
-            .tab-button {
+            .tab {
                 min-height: 45px;
 
                 padding: 8px 14px;
@@ -994,7 +1020,7 @@
                 font-size: 13px;
             }
 
-            .tab-panel {
+            .panel {
                 padding: 23px 17px;
             }
 
@@ -1006,18 +1032,14 @@
                 font-size: 13px;
             }
 
-            .form-input {
-                min-height: 54px;
-
-                padding: 13px 14px;
+            .input {
+                min-height: 55px;
 
                 font-size: 16px;
             }
 
             .primary-button {
-                min-height: 54px;
-
-                font-size: 15px;
+                min-height: 55px;
             }
 
             .result-card {
@@ -1028,32 +1050,27 @@
                 font-size: 14px;
             }
 
-            .guide-section {
+            .guide {
                 margin-top: 18px;
 
-                padding: 22px 17px;
+                padding: 23px 17px;
 
-                border-radius: 15px;
+                border-radius: 16px;
             }
 
             .guide-title {
                 font-size: 18px;
             }
 
-            .site-footer {
-                margin-top: 28px;
-
-                padding-bottom: 35px;
+            .footer {
+                padding: 28px 0 35px;
             }
 
-            .footer-links {
-                gap: 10px 18px;
-            }
         }
 
 
         /* =========================================================
-           Very Small Devices
+           SMALL MOBILE
         ========================================================= */
 
         @media (max-width: 380px) {
@@ -1062,24 +1079,25 @@
                 width: calc(100% - 14px);
             }
 
-            .site-title {
-                font-size: 24px;
+            .title {
+                font-size: 25px;
             }
 
-            .tab-button {
+            .tab {
                 padding-left: 12px;
                 padding-right: 12px;
             }
 
-            .tab-panel {
+            .panel {
                 padding-left: 14px;
                 padding-right: 14px;
             }
+
         }
 
 
         /* =========================================================
-           Accessibility
+           ACCESSIBILITY
         ========================================================= */
 
         :focus-visible {
@@ -1089,99 +1107,53 @@
         }
 
     </style>
+
 </head>
 
 
 <body>
 
-<div class="container">
+<div class="page">
 
-    <!-- =========================================================
-         Header
-    ========================================================== -->
-
-    <header class="site-header">
-
-        <div class="brand-icon" aria-hidden="true">
-            🇯🇵
-        </div>
-
-        <h1 class="site-title">
-            日本住所英語変換
-        </h1>
-
-        <p class="site-description">
-            郵便番号や日本語住所を入力するだけで、<br>
-            海外向けの住所表記に簡単に変換できます。
-        </p>
-
-    </header>
+    <div class="container">
 
 
-    <!-- =========================================================
-         Ad Area 1
-    ========================================================== -->
+        <!-- =====================================================
+             HEADER
+        ====================================================== -->
 
-    <div class="ad-area">
-
-        <div class="adsense-slot">
-
-            <!--
-                Google AdSense 広告ユニットを使用する場合は、
-                ここに Google から発行された広告コードを入れてください。
-            -->
-
-        </div>
-
-    </div>
-
-
-    <!-- =========================================================
-         Main Tool
-    ========================================================== -->
-
-    <main class="main-card">
-
-
-        <!-- Tabs -->
-
-        <div class="tabs-wrapper">
+        <header class="header">
 
             <div
-                class="tabs"
-                role="tablist"
-                aria-label="住所変換方法"
+                class="logo"
+                aria-hidden="true"
             >
+                🇯🇵
+            </div>
 
-                <button
-                    type="button"
-                    class="tab-button active"
-                    data-tab="postal"
-                    role="tab"
-                    aria-selected="true"
-                >
-                    郵便番号から変換
-                </button>
+            <h1 class="title">
+                日本住所英語変換
+            </h1>
 
-                <button
-                    type="button"
-                    class="tab-button"
-                    data-tab="address"
-                    role="tab"
-                    aria-selected="false"
-                >
-                    住所から変換
-                </button>
+            <p class="subtitle">
+                郵便番号や日本語住所を入力するだけで、<br>
+                海外向けの住所表記に簡単に変換できます。
+            </p>
 
-                <button
-                    type="button"
-                    class="tab-button"
-                    data-tab="csv"
-                    role="tab"
-                    aria-selected="false"
-                >
-                    CSV一括変換
-                </button>
+        </header>
+
+
+        <!-- =====================================================
+             ADVERTISEMENT 1
+        ====================================================== -->
+
+        <div class="ad-area">
+
+            <div class="adsense-slot">
+
+                <!--
+                    Google AdSense 広告コードをここに配置できます。
+                -->
 
             </div>
 
@@ -1189,403 +1161,473 @@
 
 
         <!-- =====================================================
-             Postal Search
+             TOOL
         ====================================================== -->
 
-        <section
-            id="tab-postal"
-            class="tab-panel active"
-            role="tabpanel"
-        >
-
-            <div class="panel-heading">
-
-                <h2 class="panel-title">
-                    郵便番号から変換
-                </h2>
-
-                <p class="panel-description">
-                    7桁の郵便番号を入力してください。
-                </p>
-
-            </div>
+        <main class="tool-card">
 
 
-            @if(session('search_error'))
+            <!-- =================================================
+                 TABS
+            ================================================== -->
 
-                <div class="error-message">
-                    {{ session('search_error') }}
-                </div>
+            <div class="tabs-area">
 
-            @endif
+                <div
+                    class="tabs"
+                    role="tablist"
+                    aria-label="住所変換方法"
+                >
 
-
-            <form
-                method="POST"
-                action="{{ secure_url('/search') }}"
-                id="postalSearchForm"
-            >
-
-                @csrf
-
-                <div class="form-group">
-
-                    <label
-                        class="form-label"
-                        for="postal_code"
+                    <button
+                        type="button"
+                        class="tab active"
+                        data-tab="postal"
+                        role="tab"
+                        aria-selected="true"
                     >
                         郵便番号
-                    </label>
+                    </button>
 
-                    <input
-                        type="text"
-                        id="postal_code"
-                        name="postal_code"
-                        class="form-input"
-                        value="{{ old('postal_code', $postalCode ?? '') }}"
-                        placeholder="060-0041"
-                        inputmode="numeric"
-                        autocomplete="postal-code"
-                        maxlength="8"
-                        enterkeyhint="search"
-                        required
-                    >
-
-                    <div class="input-help">
-                        例：060-0041 または 0600041
-                    </div>
-
-                </div>
-
-
-                <button
-                    type="submit"
-                    class="primary-button"
-                >
-                    🔍 変換する
-                </button>
-
-            </form>
-
-
-            @if(isset($addresses) && ($searchType ?? '') === 'postal')
-
-                <div class="results-section">
-
-                    <div class="results-heading">
-
-                        <h3 class="results-title">
-                            変換結果
-                        </h3>
-
-                        <span class="result-count">
-                            {{ count($addresses) }}
-                        </span>
-
-                    </div>
-
-
-                    @foreach($addresses as $index => $address)
-
-                        <div class="result-card">
-
-                            <div class="result-label">
-                                日本語住所
-                            </div>
-
-                            <div class="result-japanese">
-                                {{ $address->prefecture }}
-                                {{ $address->city }}
-                                {{ $address->town }}
-                            </div>
-
-
-                            <div class="result-label">
-                                ROMAJI
-                            </div>
-
-                            <div class="result-romaji">
-
-                                {{ $address->town_romaji }},
-                                {{ $address->city_romaji }},
-                                {{ $address->prefecture_romaji }}
-
-                            </div>
-
-
-                            <div class="result-label">
-                                海外向け住所
-                            </div>
-
-                            <div class="international-box">
-
-                                <div
-                                    class="international-address"
-                                    id="address-postal-{{ $index }}"
-                                >
-                                    {{ $address->international_town }},
-                                    {{ $address->international_city }},
-                                    {{ $address->international_prefecture }},
-                                    {{ $address->formatted_postal_code }},
-                                    Japan
-                                </div>
-
-                            </div>
-
-
-                            <button
-                                type="button"
-                                class="copy-button"
-                                data-copy-target="address-postal-{{ $index }}"
-                                onclick="copyAddress(this)"
-                            >
-                                コピー
-                            </button>
-
-                        </div>
-
-                    @endforeach
-
-                </div>
-
-            @endif
-
-        </section>
-
-
-        <!-- =====================================================
-             Address Search
-        ====================================================== -->
-
-        <section
-            id="tab-address"
-            class="tab-panel"
-            role="tabpanel"
-        >
-
-            <div class="panel-heading">
-
-                <h2 class="panel-title">
-                    日本語住所から変換
-                </h2>
-
-                <p class="panel-description">
-                    都道府県・市区町村・町名などを入力してください。
-                </p>
-
-            </div>
-
-
-            @if(session('search_error'))
-
-                <div class="error-message">
-                    {{ session('search_error') }}
-                </div>
-
-            @endif
-
-
-            <form
-                method="POST"
-                action="{{ secure_url('/search-address') }}"
-                id="addressSearchForm"
-            >
-
-                @csrf
-
-                <div class="form-group">
-
-                    <label
-                        class="form-label"
-                        for="input_address"
+                    <button
+                        type="button"
+                        class="tab"
+                        data-tab="address"
+                        role="tab"
+                        aria-selected="false"
                     >
                         日本語住所
-                    </label>
+                    </button>
 
-                    <input
-                        type="text"
-                        id="input_address"
-                        name="address"
-                        class="form-input"
-                        value="{{ old('address', $inputAddress ?? '') }}"
-                        placeholder="北海道札幌市中央区大通東"
-                        autocomplete="street-address"
-                        enterkeyhint="search"
-                        required
+                    <button
+                        type="button"
+                        class="tab"
+                        data-tab="csv"
+                        role="tab"
+                        aria-selected="false"
                     >
-
-                    <div class="input-help">
-                        例：北海道札幌市中央区大通東
-                    </div>
+                        CSV一括
+                    </button>
 
                 </div>
-
-
-                <button
-                    type="submit"
-                    class="primary-button"
-                >
-                    🔍 住所を変換する
-                </button>
-
-            </form>
-
-
-            @if(isset($addresses) && ($searchType ?? '') === 'address')
-
-                <div class="results-section">
-
-                    <div class="results-heading">
-
-                        <h3 class="results-title">
-                            変換結果
-                        </h3>
-
-                        <span class="result-count">
-                            {{ count($addresses) }}
-                        </span>
-
-                    </div>
-
-
-                    @foreach($addresses as $index => $address)
-
-                        <div class="result-card">
-
-                            <div class="result-label">
-                                日本語住所
-                            </div>
-
-                            <div class="result-japanese">
-                                {{ $address->prefecture }}
-                                {{ $address->city }}
-                                {{ $address->town }}
-                            </div>
-
-
-                            <div class="result-label">
-                                ROMAJI
-                            </div>
-
-                            <div class="result-romaji">
-
-                                {{ $address->town_romaji }},
-                                {{ $address->city_romaji }},
-                                {{ $address->prefecture_romaji }}
-
-                            </div>
-
-
-                            <div class="result-label">
-                                海外向け住所
-                            </div>
-
-                            <div class="international-box">
-
-                                <div
-                                    class="international-address"
-                                    id="address-search-{{ $index }}"
-                                >
-                                    {{ $address->international_town }},
-                                    {{ $address->international_city }},
-                                    {{ $address->international_prefecture }},
-                                    {{ $address->formatted_postal_code }},
-                                    Japan
-                                </div>
-
-                            </div>
-
-
-                            <button
-                                type="button"
-                                class="copy-button"
-                                data-copy-target="address-search-{{ $index }}"
-                                onclick="copyAddress(this)"
-                            >
-                                コピー
-                            </button>
-
-                        </div>
-
-                    @endforeach
-
-                </div>
-
-            @endif
-
-        </section>
-
-
-        <!-- =====================================================
-             CSV
-        ====================================================== -->
-
-        <section
-            id="tab-csv"
-            class="tab-panel"
-            role="tabpanel"
-        >
-
-            <div class="panel-heading">
-
-                <h2 class="panel-title">
-                    CSV一括変換
-                </h2>
-
-                <p class="panel-description">
-                    複数の住所をまとめて海外向け表記に変換できます。
-                </p>
 
             </div>
 
 
-            @if(session('csv_error'))
+            <!-- =================================================
+                 POSTAL
+            ================================================== -->
 
-                <div class="error-message">
-                    {{ session('csv_error') }}
+            <section
+                id="panel-postal"
+                class="panel active"
+                role="tabpanel"
+            >
+
+                <div class="panel-header">
+
+                    <h2 class="panel-title">
+                        郵便番号から変換
+                    </h2>
+
+                    <p class="panel-description">
+                        郵便番号を入力すると住所を検索して変換します。
+                    </p>
+
                 </div>
 
-            @endif
+
+                @if(session('search_error'))
+
+                    <div class="error-message">
+                        {{ session('search_error') }}
+                    </div>
+
+                @endif
 
 
-            <div class="csv-info">
+                <form
+                    method="POST"
+                    action="{{ secure_url('/search') }}"
+                    id="postal-form"
+                >
 
-                <p class="csv-info-title">
-                    📄 CSVファイルについて
-                </p>
-
-                <p class="csv-info-text">
-                    最大10件まで変換できます。
-                    CSVの1列目に郵便番号、2列目に住所を入力してください。
-                </p>
+                    @csrf
 
 
-                <div class="csv-example">郵便番号,住所
+                    <div class="form-group">
+
+                        <label
+                            for="postal_code"
+                            class="label"
+                        >
+                            郵便番号
+                        </label>
+
+
+                        <input
+                            type="text"
+                            id="postal_code"
+                            name="postal_code"
+                            class="input"
+                            value="{{ old('postal_code', $postalCode ?? '') }}"
+                            placeholder="060-0041"
+                            inputmode="numeric"
+                            autocomplete="postal-code"
+                            maxlength="8"
+                            enterkeyhint="search"
+                            required
+                        >
+
+
+                        <div class="help">
+                            例：060-0041 または 0600041
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+                        🔍 変換する
+                    </button>
+
+                </form>
+
+
+                @if(isset($addresses) && ($searchType ?? '') === 'postal')
+
+                    <div class="results">
+
+                        <div class="results-header">
+
+                            <h3 class="results-title">
+                                変換結果
+                            </h3>
+
+                            <span class="count">
+                                {{ count($addresses) }}
+                            </span>
+
+                        </div>
+
+
+                        @foreach($addresses as $index => $address)
+
+                            <div class="result-card">
+
+
+                                <div class="result-label">
+                                    日本語住所
+                                </div>
+
+                                <div class="result-japanese">
+
+                                    {{ $address->prefecture }}
+                                    {{ $address->city }}
+                                    {{ $address->town }}
+
+                                </div>
+
+
+                                <div class="result-label">
+                                    ROMAJI
+                                </div>
+
+                                <div class="result-romaji">
+
+                                    {{ $address->town_romaji }},
+                                    {{ $address->city_romaji }},
+                                    {{ $address->prefecture_romaji }}
+
+                                </div>
+
+
+                                <div class="result-label">
+                                    海外向け住所
+                                </div>
+
+                                <div class="international">
+
+                                    <div
+                                        class="international-address"
+                                        id="postal-result-{{ $index }}"
+                                    >
+
+                                        {{ $address->international_town }},
+                                        {{ $address->international_city }},
+                                        {{ $address->international_prefecture }},
+                                        {{ $address->formatted_postal_code }},
+                                        Japan
+
+                                    </div>
+
+                                </div>
+
+
+                                <button
+                                    type="button"
+                                    class="copy-button"
+                                    data-target="postal-result-{{ $index }}"
+                                    onclick="copyAddress(this)"
+                                >
+                                    コピー
+                                </button>
+
+                            </div>
+
+                        @endforeach
+
+                    </div>
+
+                @endif
+
+            </section>
+
+
+            <!-- =================================================
+                 ADDRESS
+            ================================================== -->
+
+            <section
+                id="panel-address"
+                class="panel"
+                role="tabpanel"
+            >
+
+                <div class="panel-header">
+
+                    <h2 class="panel-title">
+                        日本語住所から変換
+                    </h2>
+
+                    <p class="panel-description">
+                        日本語の住所を入力して海外向け表記に変換します。
+                    </p>
+
+                </div>
+
+
+                @if(session('search_error'))
+
+                    <div class="error-message">
+                        {{ session('search_error') }}
+                    </div>
+
+                @endif
+
+
+                <form
+                    method="POST"
+                    action="{{ secure_url('/search-address') }}"
+                    id="address-form"
+                >
+
+                    @csrf
+
+
+                    <div class="form-group">
+
+                        <label
+                            for="input_address"
+                            class="label"
+                        >
+                            日本語住所
+                        </label>
+
+
+                        <input
+                            type="text"
+                            id="input_address"
+                            name="address"
+                            class="input"
+                            value="{{ old('address', $inputAddress ?? '') }}"
+                            placeholder="北海道札幌市中央区大通東"
+                            autocomplete="street-address"
+                            enterkeyhint="search"
+                            required
+                        >
+
+
+                        <div class="help">
+                            例：北海道札幌市中央区大通東
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+                        🔍 住所を変換する
+                    </button>
+
+                </form>
+
+
+                @if(isset($addresses) && ($searchType ?? '') === 'address')
+
+                    <div class="results">
+
+                        <div class="results-header">
+
+                            <h3 class="results-title">
+                                変換結果
+                            </h3>
+
+                            <span class="count">
+                                {{ count($addresses) }}
+                            </span>
+
+                        </div>
+
+
+                        @foreach($addresses as $index => $address)
+
+                            <div class="result-card">
+
+
+                                <div class="result-label">
+                                    日本語住所
+                                </div>
+
+                                <div class="result-japanese">
+
+                                    {{ $address->prefecture }}
+                                    {{ $address->city }}
+                                    {{ $address->town }}
+
+                                </div>
+
+
+                                <div class="result-label">
+                                    ROMAJI
+                                </div>
+
+                                <div class="result-romaji">
+
+                                    {{ $address->town_romaji }},
+                                    {{ $address->city_romaji }},
+                                    {{ $address->prefecture_romaji }}
+
+                                </div>
+
+
+                                <div class="result-label">
+                                    海外向け住所
+                                </div>
+
+                                <div class="international">
+
+                                    <div
+                                        class="international-address"
+                                        id="address-result-{{ $index }}"
+                                    >
+
+                                        {{ $address->international_town }},
+                                        {{ $address->international_city }},
+                                        {{ $address->international_prefecture }},
+                                        {{ $address->formatted_postal_code }},
+                                        Japan
+
+                                    </div>
+
+                                </div>
+
+
+                                <button
+                                    type="button"
+                                    class="copy-button"
+                                    data-target="address-result-{{ $index }}"
+                                    onclick="copyAddress(this)"
+                                >
+                                    コピー
+                                </button>
+
+                            </div>
+
+                        @endforeach
+
+                    </div>
+
+                @endif
+
+            </section>
+
+
+            <!-- =================================================
+                 CSV
+            ================================================== -->
+
+            <section
+                id="panel-csv"
+                class="panel"
+                role="tabpanel"
+            >
+
+                <div class="panel-header">
+
+                    <h2 class="panel-title">
+                        CSV一括変換
+                    </h2>
+
+                    <p class="panel-description">
+                        複数の住所をまとめて変換できます。
+                    </p>
+
+                </div>
+
+
+                @if(session('csv_error'))
+
+                    <div class="error-message">
+                        {{ session('csv_error') }}
+                    </div>
+
+                @endif
+
+
+                <div class="csv-info">
+
+                    <p class="csv-info-title">
+                        📄 CSVファイルの形式
+                    </p>
+
+                    <p class="csv-info-text">
+                        最大10件まで変換できます。
+                        1列目に郵便番号、2列目に住所を入力してください。
+                    </p>
+
+
+                    <div class="csv-example">郵便番号,住所
 060-0041,北海道札幌市中央区大通東
 080-0111,北海道河東郡音更町木野大通東</div>
 
-            </div>
+                </div>
 
 
-            <form
-                method="POST"
-                action="{{ secure_url('/convert-csv') }}"
-                enctype="multipart/form-data"
-                id="csvForm"
-            >
+                <form
+                    method="POST"
+                    action="{{ secure_url('/convert-csv') }}"
+                    enctype="multipart/form-data"
+                    id="csv-form"
+                >
 
-                @csrf
+                    @csrf
 
-                <div class="form-group">
 
-                    <label
-                        class="form-label"
-                        for="csv_file"
-                    >
-                        CSVファイル
-                    </label>
+                    <div class="form-group">
 
-                    <div class="file-input-wrapper">
+                        <label
+                            for="csv_file"
+                            class="label"
+                        >
+                            CSVファイル
+                        </label>
+
 
                         <input
                             type="file"
@@ -1598,288 +1640,308 @@
 
                     </div>
 
-                </div>
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                        id="csv-button"
+                    >
+                        📄 CSVを変換する
+                    </button>
+
+                </form>
 
 
-                <button
-                    type="submit"
-                    class="primary-button"
-                    id="csvSubmitButton"
-                >
-                    📄 CSVを変換する
-                </button>
+                @if(isset($csvResults) && count($csvResults) > 0)
 
-            </form>
+                    <div class="results">
 
+                        <div class="results-header">
 
-            @if(isset($csvResults) && count($csvResults) > 0)
+                            <h3 class="results-title">
+                                CSV変換結果
+                            </h3>
 
-                <div class="results-section">
+                            <span class="count">
+                                {{ $csvCount ?? count($csvResults) }}
+                            </span>
 
-                    <div class="results-heading">
-
-                        <h3 class="results-title">
-                            CSV変換結果
-                        </h3>
-
-                        <span class="result-count">
-                            {{ $csvCount ?? count($csvResults) }}
-                        </span>
-
-                    </div>
+                        </div>
 
 
-                    <div class="csv-result-wrapper">
+                        <div class="table-scroll">
 
-                        <table class="csv-result-table">
+                            <table class="csv-table">
 
-                            <thead>
-
-                                <tr>
-                                    <th>郵便番号</th>
-                                    <th>日本語住所</th>
-                                    <th>海外向け住所</th>
-                                </tr>
-
-                            </thead>
-
-                            <tbody>
-
-                                @foreach($csvResults as $result)
+                                <thead>
 
                                     <tr>
 
-                                        <td>
-                                            {{ $result['postal_code'] ?? '' }}
-                                        </td>
+                                        <th>
+                                            郵便番号
+                                        </th>
 
-                                        <td>
-                                            {{ $result['address'] ?? '' }}
-                                        </td>
+                                        <th>
+                                            日本語住所
+                                        </th>
 
-                                        <td>
-                                            {{ $result['international_address'] ?? '' }}
-                                        </td>
+                                        <th>
+                                            海外向け住所
+                                        </th>
 
                                     </tr>
 
-                                @endforeach
+                                </thead>
 
-                            </tbody>
 
-                        </table>
+                                <tbody>
+
+                                    @foreach($csvResults as $result)
+
+                                        <tr>
+
+                                            <td>
+                                                {{ $result['postal_code'] ?? '' }}
+                                            </td>
+
+                                            <td>
+                                                {{ $result['address'] ?? '' }}
+                                            </td>
+
+                                            <td>
+                                                {{ $result['international_address'] ?? '' }}
+                                            </td>
+
+                                        </tr>
+
+                                    @endforeach
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+
+                        <form
+                            method="POST"
+                            action="{{ secure_url('/download-csv') }}"
+                            class="download-area"
+                        >
+
+                            @csrf
+
+
+                            @foreach($csvResults as $index => $result)
+
+                                <input
+                                    type="hidden"
+                                    name="results[{{ $index }}][postal_code]"
+                                    value="{{ $result['postal_code'] ?? '' }}"
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="results[{{ $index }}][address]"
+                                    value="{{ $result['address'] ?? '' }}"
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="results[{{ $index }}][international_address]"
+                                    value="{{ $result['international_address'] ?? '' }}"
+                                >
+
+                            @endforeach
+
+
+                            <button
+                                type="submit"
+                                class="primary-button"
+                            >
+                                ⬇️ CSVをダウンロード
+                            </button>
+
+                        </form>
 
                     </div>
 
+                @endif
 
-                    <form
-                        method="POST"
-                        action="{{ secure_url('/download-csv') }}"
-                        class="csv-download"
-                    >
+            </section>
 
-                        @csrf
-
-                        @foreach($csvResults as $index => $result)
-
-                            <input
-                                type="hidden"
-                                name="results[{{ $index }}][postal_code]"
-                                value="{{ $result['postal_code'] ?? '' }}"
-                            >
-
-                            <input
-                                type="hidden"
-                                name="results[{{ $index }}][address]"
-                                value="{{ $result['address'] ?? '' }}"
-                            >
-
-                            <input
-                                type="hidden"
-                                name="results[{{ $index }}][international_address]"
-                                value="{{ $result['international_address'] ?? '' }}"
-                            >
-
-                        @endforeach
+        </main>
 
 
-                        <button
-                            type="submit"
-                            class="primary-button"
-                        >
-                            ⬇️ CSVをダウンロード
-                        </button>
+        <!-- =====================================================
+             ADVERTISEMENT 2
+        ====================================================== -->
 
-                    </form>
+        <div class="ad-area">
 
-                </div>
+            <div class="adsense-slot">
 
-            @endif
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             GUIDE
+        ====================================================== -->
+
+        <section class="guide">
+
+            <h2 class="guide-title">
+                日本住所英語変換の使い方
+            </h2>
+
+
+            <div class="guide-item">
+
+                <h3 class="guide-question">
+                    郵便番号から住所を変換する
+                </h3>
+
+                <p class="guide-answer">
+                    郵便番号を入力して「変換する」を押してください。
+                    日本語住所と海外向けの住所表記が表示されます。
+                </p>
+
+            </div>
+
+
+            <div class="guide-item">
+
+                <h3 class="guide-question">
+                    ハイフンなしの郵便番号も使えますか？
+                </h3>
+
+                <p class="guide-answer">
+                    はい。「060-0041」と「0600041」のどちらでも入力できます。
+                </p>
+
+            </div>
+
+
+            <div class="guide-item">
+
+                <h3 class="guide-question">
+                    日本語住所から検索できますか？
+                </h3>
+
+                <p class="guide-answer">
+                    はい。都道府県、市区町村、町名などの日本語住所を入力して検索できます。
+                </p>
+
+            </div>
+
+
+            <div class="guide-item">
+
+                <h3 class="guide-question">
+                    CSVで一括変換できますか？
+                </h3>
+
+                <p class="guide-answer">
+                    はい。CSVファイルをアップロードして、
+                    最大10件の住所をまとめて変換できます。
+                </p>
+
+            </div>
+
+
+            <div class="guide-item">
+
+                <h3 class="guide-question">
+                    変換した住所はコピーできますか？
+                </h3>
+
+                <p class="guide-answer">
+                    変換結果の「コピー」ボタンを押すと、
+                    海外向け住所をそのままコピーできます。
+                </p>
+
+            </div>
 
         </section>
 
-    </main>
 
+        <!-- =====================================================
+             ADVERTISEMENT 3
+        ====================================================== -->
 
-    <!-- =========================================================
-         Ad Area 2
-    ========================================================== -->
+        <div class="ad-area">
 
-    <div class="ad-area">
+            <div class="adsense-slot">
 
-        <div class="adsense-slot">
+            </div>
 
         </div>
+
+
+        <!-- =====================================================
+             FOOTER
+        ====================================================== -->
+
+        <footer class="footer">
+
+            <nav
+                class="footer-links"
+                aria-label="フッターナビゲーション"
+            >
+
+                <a href="{{ secure_url('/terms') }}">
+                    利用規約
+                </a>
+
+                <a href="{{ secure_url('/privacy') }}">
+                    プライバシーポリシー
+                </a>
+
+                <a href="{{ secure_url('/contact') }}">
+                    お問い合わせ
+                </a>
+
+            </nav>
+
+
+            <div>
+                © {{ date('Y') }} 日本住所英語変換
+            </div>
+
+        </footer>
+
 
     </div>
-
-
-    <!-- =========================================================
-         Guide / FAQ
-    ========================================================== -->
-
-    <section class="guide-section">
-
-        <h2 class="guide-title">
-            日本住所英語変換について
-        </h2>
-
-
-        <div class="guide-item">
-
-            <h3 class="guide-question">
-                郵便番号から住所を検索できますか？
-            </h3>
-
-            <p class="guide-answer">
-                はい。7桁の郵便番号を入力すると、
-                登録されている日本語住所を検索し、
-                海外向けの英語表記に変換できます。
-            </p>
-
-        </div>
-
-
-        <div class="guide-item">
-
-            <h3 class="guide-question">
-                「0600041」のようにハイフンなしでも入力できますか？
-            </h3>
-
-            <p class="guide-answer">
-                はい。郵便番号は「060-0041」のようなハイフン付き、
-                または「0600041」のようなハイフンなしでも入力できます。
-            </p>
-
-        </div>
-
-
-        <div class="guide-item">
-
-            <h3 class="guide-question">
-                海外向け住所はどのように表示されますか？
-            </h3>
-
-            <p class="guide-answer">
-                町名、市区町村、都道府県、郵便番号、Japan の順で、
-                海外向けに利用しやすい形式で表示します。
-            </p>
-
-        </div>
-
-
-        <div class="guide-item">
-
-            <h3 class="guide-question">
-                CSVを使ってまとめて変換できますか？
-            </h3>
-
-            <p class="guide-answer">
-                はい。CSVファイルをアップロードすると、
-                最大10件までまとめて変換できます。
-            </p>
-
-        </div>
-
-    </section>
-
-
-    <!-- =========================================================
-         Ad Area 3
-    ========================================================== -->
-
-    <div class="ad-area">
-
-        <div class="adsense-slot">
-
-        </div>
-
-    </div>
-
-
-    <!-- =========================================================
-         Footer
-    ========================================================== -->
-
-    <footer class="site-footer">
-
-        <nav
-            class="footer-links"
-            aria-label="フッターナビゲーション"
-        >
-
-            <a href="{{ secure_url('/terms') }}">
-                利用規約
-            </a>
-
-            <a href="{{ secure_url('/privacy') }}">
-                プライバシーポリシー
-            </a>
-
-            <a href="{{ secure_url('/contact') }}">
-                お問い合わせ
-            </a>
-
-        </nav>
-
-
-        <div>
-            © {{ date('Y') }} 日本住所英語変換
-        </div>
-
-    </footer>
 
 </div>
 
 
-<!-- =============================================================
-     JavaScript
-============================================================= -->
-
 <script>
 
     /* =========================================================
-       Tab Switching
+       TAB
     ========================================================= */
 
     document.addEventListener('DOMContentLoaded', function () {
 
-        const tabButtons =
-            document.querySelectorAll('.tab-button');
+        const tabs =
+            document.querySelectorAll('.tab');
 
-        const tabPanels =
-            document.querySelectorAll('.tab-panel');
+        const panels =
+            document.querySelectorAll('.panel');
 
 
-        tabButtons.forEach(function (button) {
+        tabs.forEach(function (tab) {
 
-            button.addEventListener('click', function () {
+            tab.addEventListener('click', function () {
 
                 const target =
-                    button.dataset.tab;
+                    tab.getAttribute('data-tab');
 
 
-                tabButtons.forEach(function (item) {
+                tabs.forEach(function (item) {
 
                     item.classList.remove('active');
 
@@ -1891,16 +1953,16 @@
                 });
 
 
-                tabPanels.forEach(function (panel) {
+                panels.forEach(function (panel) {
 
                     panel.classList.remove('active');
 
                 });
 
 
-                button.classList.add('active');
+                tab.classList.add('active');
 
-                button.setAttribute(
+                tab.setAttribute(
                     'aria-selected',
                     'true'
                 );
@@ -1908,7 +1970,7 @@
 
                 const targetPanel =
                     document.getElementById(
-                        'tab-' + target
+                        'panel-' + target
                     );
 
 
@@ -1924,11 +1986,13 @@
 
 
         /* =====================================================
-           Postal Code Formatting
+           POSTAL FORMAT
         ====================================================== */
 
         const postalInput =
-            document.getElementById('postal_code');
+            document.getElementById(
+                'postal_code'
+            );
 
 
         if (postalInput) {
@@ -1938,12 +2002,19 @@
                 function () {
 
                     let value =
-                        this.value.replace(/\D/g, '');
+                        this.value.replace(
+                            /\D/g,
+                            ''
+                        );
+
 
                     if (value.length > 7) {
 
                         value =
-                            value.substring(0, 7);
+                            value.substring(
+                                0,
+                                7
+                            );
 
                     }
 
@@ -1951,7 +2022,10 @@
                     if (value.length > 3) {
 
                         value =
-                            value.substring(0, 3)
+                            value.substring(
+                                0,
+                                3
+                            )
                             + '-'
                             + value.substring(3);
 
@@ -1967,40 +2041,12 @@
 
 
         /* =====================================================
-           CSV Submit Loading
-        ====================================================== */
-
-        const csvForm =
-            document.getElementById('csvForm');
-
-        const csvSubmitButton =
-            document.getElementById('csvSubmitButton');
-
-
-        if (csvForm && csvSubmitButton) {
-
-            csvForm.addEventListener(
-                'submit',
-                function () {
-
-                    csvSubmitButton.disabled = true;
-
-                    csvSubmitButton.textContent =
-                        '変換しています…';
-
-                }
-            );
-
-        }
-
-
-        /* =====================================================
-           Search Submit Loading
+           POSTAL FORM
         ====================================================== */
 
         const postalForm =
             document.getElementById(
-                'postalSearchForm'
+                'postal-form'
             );
 
 
@@ -2012,40 +2058,7 @@
 
                     const button =
                         this.querySelector(
-                            'button[type="submit"]'
-                        );
-
-
-                    if (button) {
-
-                        button.disabled = true;
-
-                        button.textContent =
-                            '検索しています…';
-
-                    }
-
-                }
-            );
-
-        }
-
-
-        const addressForm =
-            document.getElementById(
-                'addressSearchForm'
-            );
-
-
-        if (addressForm) {
-
-            addressForm.addEventListener(
-                'submit',
-                function () {
-
-                    const button =
-                        this.querySelector(
-                            'button[type="submit"]'
+                            '.primary-button'
                         );
 
 
@@ -2065,11 +2078,85 @@
 
 
         /* =====================================================
-           Automatically Open Correct Tab
+           ADDRESS FORM
+        ====================================================== */
+
+        const addressForm =
+            document.getElementById(
+                'address-form'
+            );
+
+
+        if (addressForm) {
+
+            addressForm.addEventListener(
+                'submit',
+                function () {
+
+                    const button =
+                        this.querySelector(
+                            '.primary-button'
+                        );
+
+
+                    if (button) {
+
+                        button.disabled = true;
+
+                        button.textContent =
+                            '検索しています…';
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           CSV FORM
+        ====================================================== */
+
+        const csvForm =
+            document.getElementById(
+                'csv-form'
+            );
+
+
+        if (csvForm) {
+
+            csvForm.addEventListener(
+                'submit',
+                function () {
+
+                    const button =
+                        document.getElementById(
+                            'csv-button'
+                        );
+
+
+                    if (button) {
+
+                        button.disabled = true;
+
+                        button.textContent =
+                            '変換しています…';
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           OPEN CURRENT RESULT TAB
         ====================================================== */
 
         const searchType =
-            @json($searchType ?? null);
+            "{{ $searchType ?? '' }}";
 
 
         if (searchType === 'address') {
@@ -2093,31 +2180,34 @@
 
 
     /* =========================================================
-       Activate Tab
+       ACTIVATE TAB
     ========================================================= */
 
     function activateTab(target) {
 
-        const buttons =
-            document.querySelectorAll('.tab-button');
+        const tabs =
+            document.querySelectorAll('.tab');
 
         const panels =
-            document.querySelectorAll('.tab-panel');
+            document.querySelectorAll('.panel');
 
 
-        buttons.forEach(function (button) {
+        tabs.forEach(function (tab) {
 
-            const isActive =
-                button.dataset.tab === target;
+            const active =
+                tab.getAttribute('data-tab')
+                === target;
 
-            button.classList.toggle(
+
+            tab.classList.toggle(
                 'active',
-                isActive
+                active
             );
 
-            button.setAttribute(
+
+            tab.setAttribute(
                 'aria-selected',
-                isActive ? 'true' : 'false'
+                active ? 'true' : 'false'
             );
 
         });
@@ -2127,7 +2217,7 @@
 
             panel.classList.toggle(
                 'active',
-                panel.id === 'tab-' + target
+                panel.id === 'panel-' + target
             );
 
         });
@@ -2136,16 +2226,21 @@
 
 
     /* =========================================================
-       Copy Address
+       COPY ADDRESS
     ========================================================= */
 
     async function copyAddress(button) {
 
         const targetId =
-            button.dataset.copyTarget;
+            button.getAttribute(
+                'data-target'
+            );
+
 
         const target =
-            document.getElementById(targetId);
+            document.getElementById(
+                targetId
+            );
 
 
         if (!target) {
@@ -2159,18 +2254,36 @@
             target.innerText.trim();
 
 
+        const originalText =
+            button.getAttribute(
+                'data-original'
+            )
+            || button.textContent;
+
+
+        button.setAttribute(
+            'data-original',
+            originalText
+        );
+
+
         try {
 
-            await navigator.clipboard.writeText(text);
+            if (
+                navigator.clipboard
+                &&
+                window.isSecureContext
+            ) {
 
+                await navigator.clipboard.writeText(
+                    text
+                );
 
-            const originalText =
-                button.dataset.originalText
-                || button.textContent;
+            } else {
 
+                copyFallback(text);
 
-            button.dataset.originalText =
-                originalText;
+            }
 
 
             button.classList.add('copied');
@@ -2181,7 +2294,9 @@
 
             setTimeout(function () {
 
-                button.classList.remove('copied');
+                button.classList.remove(
+                    'copied'
+                );
 
                 button.textContent =
                     originalText;
@@ -2191,48 +2306,14 @@
 
         } catch (error) {
 
-            /*
-             * Clipboard API が利用できない環境向け
-             */
-
             try {
 
-                const textarea =
-                    document.createElement('textarea');
+                copyFallback(text);
 
-                textarea.value = text;
 
-                textarea.style.position =
-                    'fixed';
-
-                textarea.style.left =
-                    '-9999px';
-
-                document.body.appendChild(
-                    textarea
+                button.classList.add(
+                    'copied'
                 );
-
-                textarea.select();
-
-                document.execCommand(
-                    'copy'
-                );
-
-                document.body.removeChild(
-                    textarea
-                );
-
-
-                const originalText =
-                    button.dataset.originalText
-                    || button.textContent;
-
-
-                button.dataset.originalText =
-                    originalText;
-
-
-                button.classList.add('copied');
 
                 button.textContent =
                     '✓ コピーしました';
@@ -2253,7 +2334,7 @@
             } catch (fallbackError) {
 
                 alert(
-                    'コピーできませんでした。住所を手動でコピーしてください。'
+                    'コピーできませんでした。'
                 );
 
             }
@@ -2262,7 +2343,67 @@
 
     }
 
+
+    /* =========================================================
+       COPY FALLBACK
+    ========================================================= */
+
+    function copyFallback(text) {
+
+        const textarea =
+            document.createElement(
+                'textarea'
+            );
+
+
+        textarea.value = text;
+
+        textarea.style.position =
+            'fixed';
+
+        textarea.style.top =
+            '0';
+
+        textarea.style.left =
+            '-9999px';
+
+        textarea.style.opacity =
+            '0';
+
+
+        document.body.appendChild(
+            textarea
+        );
+
+
+        textarea.focus();
+
+        textarea.select();
+
+
+        const successful =
+            document.execCommand(
+                'copy'
+            );
+
+
+        document.body.removeChild(
+            textarea
+        );
+
+
+        if (!successful) {
+
+            throw new Error(
+                'Copy failed'
+            );
+
+        }
+
+    }
+
 </script>
+
 
 </body>
 
