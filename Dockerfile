@@ -1,4 +1,3 @@
-```dockerfile
 FROM php:8.2-cli
 
 RUN apt-get update && apt-get install -y \
@@ -34,4 +33,3 @@ RUN mkdir -p storage/framework/cache \
 RUN chmod -R 777 storage bootstrap/cache
 
 CMD php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
-```
