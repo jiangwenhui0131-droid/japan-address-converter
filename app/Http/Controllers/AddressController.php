@@ -22,8 +22,7 @@ class AddressController extends Controller
         $searchType = session()->pull('searchType');
 
         // CSVエラーメッセージ
-        $csvError = session('csv_error');
-        session()->forget('csv_error');
+        $csvError = session()->pull('csv_error');
 
         return response()
             ->view('address', [
@@ -248,10 +247,11 @@ class AddressController extends Controller
         );
 
         if ($validator->fails()) {
-            return back()->with(
-                'csv_error',
-                $validator->errors()->first('csv_file')
-            );
+            return redirect('/')
+                ->with(
+                    'csv_error',
+                    $validator->errors()->first('csv_file')
+                );
         }
 
         /**
@@ -262,34 +262,34 @@ class AddressController extends Controller
         $file = $request->file('csv_file');
 
         if (!$file || !$file->isValid()) {
-            return back()->with(
-                'csv_error',
-                'CSVファイルをアップロードできませんでした。もう一度お試しください。'
-            );
+            return redirect('/')
+                ->with(
+                    'csv_error',
+                    'CSVファイルをアップロードできませんでした。もう一度お試しください。'
+                );
         }
 
         /**
          * ----------------------------------------
          * ③ ファイルサイズを再チェック
          * ----------------------------------------
-         *
-         * PHP側の制限などでLaravelのmaxチェックを
-         * 通過できないケースも考慮する。
          */
         $fileSize = $file->getSize();
 
         if ($fileSize === false) {
-            return back()->with(
-                'csv_error',
-                'ファイルサイズを確認できませんでした。もう一度お試しください。'
-            );
+            return redirect('/')
+                ->with(
+                    'csv_error',
+                    'ファイルサイズを確認できませんでした。もう一度お試しください。'
+                );
         }
 
         if ($fileSize > 128 * 1024 * 1024) {
-            return back()->with(
-                'csv_error',
-                'ファイルサイズが大きすぎます。128MB以下のファイルをアップロードしてください。'
-            );
+            return redirect('/')
+                ->with(
+                    'csv_error',
+                    'ファイルサイズが大きすぎます。128MB以下のファイルをアップロードしてください。'
+                );
         }
 
         /**
@@ -300,10 +300,11 @@ class AddressController extends Controller
         $realPath = $file->getRealPath();
 
         if (!$realPath || !is_file($realPath)) {
-            return back()->with(
-                'csv_error',
-                'CSVファイルを読み込めませんでした。もう一度お試しください。'
-            );
+            return redirect('/')
+                ->with(
+                    'csv_error',
+                    'CSVファイルを読み込めませんでした。もう一度お試しください。'
+                );
         }
 
         $handle = @fopen(
@@ -312,10 +313,11 @@ class AddressController extends Controller
         );
 
         if ($handle === false) {
-            return back()->with(
-                'csv_error',
-                'CSVファイルを読み込めませんでした。'
-            );
+            return redirect('/')
+                ->with(
+                    'csv_error',
+                    'CSVファイルを読み込めませんでした。'
+                );
         }
 
         /**
@@ -342,10 +344,11 @@ class AddressController extends Controller
                 if (count($row) < 2) {
                     fclose($handle);
 
-                    return back()->with(
-                        'csv_error',
-                        'CSVファイルの形式が正しくありません。1列目に郵便番号、2列目に住所を入力してください。'
-                    );
+                    return redirect('/')
+                        ->with(
+                            'csv_error',
+                            'CSVファイルの形式が正しくありません。1列目に郵便番号、2列目に住所を入力してください。'
+                        );
                 }
 
                 $firstColumn = trim(
@@ -390,9 +393,7 @@ class AddressController extends Controller
                     continue;
                 }
 
-                /**
-                 * 両方空の場合はデータとして数えない
-                 */
+                // 両方空の場合はデータとして数えない
                 if (
                     $firstColumn === ''
                     && $secondColumn === ''
@@ -400,19 +401,18 @@ class AddressController extends Controller
                     continue;
                 }
 
-                /**
-                 * 1列目も2列目も必要
-                 */
+                // 1列目も2列目も必要
                 if (
                     $firstColumn === ''
                     || $secondColumn === ''
                 ) {
                     fclose($handle);
 
-                    return back()->with(
-                        'csv_error',
-                        'CSVファイルの形式が正しくありません。1列目に郵便番号、2列目に住所を入力してください。'
-                    );
+                    return redirect('/')
+                        ->with(
+                            'csv_error',
+                            'CSVファイルの形式が正しくありません。1列目に郵便番号、2列目に住所を入力してください。'
+                        );
                 }
 
                 $rows[] = [
@@ -426,19 +426,21 @@ class AddressController extends Controller
                 if (count($rows) > 100) {
                     fclose($handle);
 
-                    return back()->with(
-                        'csv_error',
-                        'CSV一括変換は100件まで無料です。101件以上の変換については、有料サービスをご利用ください。'
-                    );
+                    return redirect('/')
+                        ->with(
+                            'csv_error',
+                            'CSV一括変換は100件まで無料です。101件以上の変換については、有料サービスをご利用ください。'
+                        );
                 }
             }
         } catch (\Throwable $e) {
             fclose($handle);
 
-            return back()->with(
-                'csv_error',
-                'CSVファイルを読み込めませんでした。ファイルの内容や形式を確認して、もう一度お試しください。'
-            );
+            return redirect('/')
+                ->with(
+                    'csv_error',
+                    'CSVファイルを読み込めませんでした。ファイルの内容や形式を確認して、もう一度お試しください。'
+                );
         }
 
         fclose($handle);
@@ -452,10 +454,11 @@ class AddressController extends Controller
 
         // 0件の場合
         if ($csvCount === 0) {
-            return back()->with(
-                'csv_error',
-                '変換できる住所データがありません。1列目に郵便番号、2列目に住所を入力してください。'
-            );
+            return redirect('/')
+                ->with(
+                    'csv_error',
+                    '変換できる住所データがありません。1列目に郵便番号、2列目に住所を入力してください。'
+                );
         }
 
         /**
@@ -597,10 +600,11 @@ class AddressController extends Controller
                 ];
             }
         } catch (\Throwable $e) {
-            return back()->with(
-                'csv_error',
-                '住所データの変換中にエラーが発生しました。ファイルの内容を確認して、もう一度お試しください。'
-            );
+            return redirect('/')
+                ->with(
+                    'csv_error',
+                    '住所データの変換中にエラーが発生しました。ファイルの内容を確認して、もう一度お試しください。'
+                );
         }
 
         /**
