@@ -1488,10 +1488,10 @@
             </div>
 
 
-            @if(session('csv_error'))
+            @if(!empty($csv_error))
 
                 <div class="error-message">
-                    {{ session('csv_error') }}
+                    {{ $csv_error }}
                 </div>
 
             @endif
@@ -3203,7 +3203,7 @@
 
                 activateTab('csv');
 
-            @elseif(session()->has('csv_error'))
+            @elseif(!empty($csv_error))
 
                 activateTab('csv');
 
