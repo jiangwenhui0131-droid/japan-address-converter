@@ -173,10 +173,15 @@ class AddressController extends Controller
     public function convertCsv(Request $request)
     {
         /*
-         * ファイルサイズ・形式チェック
+         * ----------------------------------------
+         * ① ファイルチェック
+         * ----------------------------------------
          *
-         * max:10240 = 10240KB = 10MB
+         * max:131072
+         * = 131072KB
+         * = 128MB
          */
+
         $validator = Validator::make(
             $request->all(),
             [
@@ -184,7 +189,7 @@ class AddressController extends Controller
                     'required',
                     'file',
                     'mimes:csv,txt',
-                    'max:10240',
+                    'max:131072',
                 ],
             ],
             [
@@ -198,7 +203,7 @@ class AddressController extends Controller
                     'CSVまたはTXTファイルをアップロードしてください。',
 
                 'csv_file.max' =>
-                    'ファイルサイズが大きすぎます。10MB以下のファイルをアップロードしてください。',
+                    'ファイルサイズが大きすぎます。128MB以下のファイルをアップロードしてください。',
             ]
         );
 
@@ -210,8 +215,11 @@ class AddressController extends Controller
         }
 
         /*
-         * アップロードされたファイルを取得
+         * ----------------------------------------
+         * ② ファイル取得
+         * ----------------------------------------
          */
+
         $file = $request->file('csv_file');
 
         if (!$file || !$file->isValid()) {
@@ -222,8 +230,11 @@ class AddressController extends Controller
         }
 
         /*
-         * CSVファイルを開く
+         * ----------------------------------------
+         * ③ CSVファイルを開く
+         * ----------------------------------------
          */
+
         $handle = fopen(
             $file->getRealPath(),
             'r'
@@ -237,9 +248,12 @@ class AddressController extends Controller
         }
 
         /*
-         * CSVを読み込み、
-         * 実際のデータ件数を確認
+         * ----------------------------------------
+         * ④ CSVを読み込み、
+         *    実際のデータ件数を確認
+         * ----------------------------------------
          */
+
         $rows = [];
         $rowNumber = 0;
 
@@ -254,8 +268,13 @@ class AddressController extends Controller
             $firstColumn = trim($row[0]);
             $secondColumn = trim($row[1]);
 
-            /*
+            /**
              * ヘッダー行の場合はスキップ
+             *
+             * 例：
+             * 郵便番号,住所
+             * postal_code,address
+             * postcode,address
              */
             if (
                 $rowNumber === 1
@@ -268,9 +287,7 @@ class AddressController extends Controller
                 continue;
             }
 
-            /*
-             * 両方空の場合はデータとして数えない
-             */
+            // 両方空の場合はデータとして数えない
             if (
                 $firstColumn === ''
                 && $secondColumn === ''
@@ -299,10 +316,14 @@ class AddressController extends Controller
         fclose($handle);
 
         /*
-         * 件数チェック
+         * ----------------------------------------
+         * ⑤ 件数チェック
+         * ----------------------------------------
          */
+
         $csvCount = count($rows);
 
+        // 0件の場合
         if ($csvCount === 0) {
             return back()->with(
                 'csv_error',
@@ -311,8 +332,11 @@ class AddressController extends Controller
         }
 
         /*
-         * CSV変換
+         * ----------------------------------------
+         * ⑥ CSV変換
+         * ----------------------------------------
          */
+
         $results = [];
 
         foreach ($rows as $row) {
@@ -381,8 +405,8 @@ class AddressController extends Controller
                                 ''
                             ),
                             ' ',
-                                ''
-                            ) LIKE ?",
+                            ''
+                        ) LIKE ?",
                         ['%' . $normalizedAddress . '%']
                     )->first();
                 }
@@ -447,8 +471,11 @@ class AddressController extends Controller
         }
 
         /*
-         * CSV変換結果をSessionに一時保存
+         * ----------------------------------------
+         * ⑦ CSV変換結果をSessionに一時保存
+         * ----------------------------------------
          */
+
         session()->put(
             'csvResults',
             $results
@@ -460,7 +487,8 @@ class AddressController extends Controller
         );
 
         /*
-         * 初期ページへリダイレクト
+         * POSTページをそのまま表示せず、
+         * 初期ページへリダイレクトする
          */
         return redirect('/');
     }
