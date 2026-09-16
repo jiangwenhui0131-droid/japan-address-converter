@@ -545,6 +545,13 @@ a {
   white-space: pre;
 }
 
+.csv-result-note {
+  text-align: center;
+  margin: 16px 0 0;
+  color: #667085;
+  font-size: 13px;
+}
+
 
 /* =========================================================
    FILE INPUT
