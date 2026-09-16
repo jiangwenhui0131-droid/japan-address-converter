@@ -18,7 +18,7 @@
     <meta property="og:title" content="運営者について｜Japan Address Converter">
     <meta
         property="og:description"
-        content="Japan Address Converterの運営者情報をご案内します"
+        content="Japan Address Converterの運営者情報をご案内します。"
     >
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ secure_url('/about') }}">
