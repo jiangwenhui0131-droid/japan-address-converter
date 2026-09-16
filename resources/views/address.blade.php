@@ -19,6 +19,11 @@
     content="日本の郵便番号や住所を海外向けの英語表記に変換できる無料ツールです。郵便番号検索、住所検索、CSV一括変換に対応しています。"
 >
 
+<link
+    rel="canonical"
+    href="https://japanaddresses.com/"
+>
+
 <meta
     name="robots"
     content="index, follow"
@@ -70,7 +75,7 @@
 
 <meta
     name="twitter:description"
-    content="日本の郵便番号や住所を海外向けの英語表記に変換できる無料ツールです。"
+    content="日本の郵便番号や住所を海外向けの英語表記に変換できる無料ツールです。郵便番号検索、住所検索、CSV一括変換に対応しています。"
 >
 
 <!-- Google AdSense -->
