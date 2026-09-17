@@ -119,7 +119,9 @@ class AddressController extends Controller
      */
     public function searchAddress(Request $request)
     {
-        $inputAddress = trim($request->input('address', ''));
+        $inputAddress = trim(
+            $request->input('address', '')
+        );
 
         // 入力が空の場合は従来通り空結果
         if ($inputAddress === '') {
@@ -210,6 +212,7 @@ class AddressController extends Controller
              * 仙台市太白区緑ヶ丘4-30-3 アークベース緑ヶ丘 ll 201
              *
              * ↓
+             *
              * base:
              * 仙台市太白区緑ヶ丘
              *
@@ -323,7 +326,9 @@ class AddressController extends Controller
             $japaneseAddress = trim((string) $row[1]);
 
             // ヘッダーをスキップ
-            $headerPostal = mb_strtolower($postalCode);
+            $headerPostal = mb_strtolower(
+                $postalCode
+            );
 
             if (
                 $postalCode === '郵便番号' ||
@@ -553,22 +558,32 @@ class AddressController extends Controller
         PostalCode $address,
         string $detail = ''
     ): void {
-        $address->international_town = $this->formatTown(
-            $this->romajiService->convert($address->town)
-        );
+        $address->international_town =
+            $this->formatTown(
+                $this->romajiService->convert(
+                    $address->town
+                )
+            );
 
-        $address->international_city = $this->formatCity(
-            $this->romajiService->convert($address->city)
-        );
+        $address->international_city =
+            $this->formatCity(
+                $this->romajiService->convert(
+                    $address->city
+                )
+            );
 
-        $address->international_prefecture = $this->formatName(
-            $this->romajiService->convert($address->prefecture)
-        );
+        $address->international_prefecture =
+            $this->formatName(
+                $this->romajiService->convert(
+                    $address->prefecture
+                )
+            );
 
         $address->formatted_postal_code =
             $address->postal_code;
 
-        $parsedDetail = $this->parseAddressDetail($detail);
+        $parsedDetail =
+            $this->parseAddressDetail($detail);
 
         $address->international_number =
             $parsedDetail['number'];
@@ -590,11 +605,16 @@ class AddressController extends Controller
      * DBに住所がない場合のフォールバック変換
      *
      * 例：
+     *
      * 仙台市太白区緑ヶ丘4-30-3 アークベース緑ヶ丘 ll 201
      *
      * ↓
-     * base   = 仙台市太白区緑ヶ丘
-     * detail = 4-30-3 アークベース緑ヶ丘 ll 201
+     *
+     * base:
+     * 仙台市太白区緑ヶ丘
+     *
+     * detail:
+     * 4-30-3 アークベース緑ヶ丘 ll 201
      *
      * DBにない郵便番号は推測しない。
      */
@@ -608,42 +628,40 @@ class AddressController extends Controller
             return null;
         }
 
-        $normalizedAddress = $this->normalizeSpaces(
-            $inputAddress
-        );
+        $normalizedAddress =
+            $this->normalizeSpaces(
+                $inputAddress
+            );
 
         /**
-         * 最初の数字より前を住所のベースとして扱う。
+         * スペースを除去した住所から、
+         * 最初の数字より前をベース住所として取得する。
          */
-        $baseAddress = $this->extractSearchBase(
-            preg_replace(
-                '/[\s　]+/u',
-                '',
-                $normalizedAddress
-            )
+        $addressWithoutSpaces = preg_replace(
+            '/[\s　]+/u',
+            '',
+            $normalizedAddress
         );
+
+        $baseAddress =
+            $this->extractSearchBase(
+                $addressWithoutSpaces
+            );
 
         if ($baseAddress === '') {
             return null;
         }
 
         /**
-         * ベース住所の後ろを詳細住所として取得。
+         * 最初の数字から後ろを詳細住所として取得する。
+         *
+         * DBに住所が存在しない場合は、
+         * 入力住所から直接詳細住所を解析する。
          */
-        $detail = $this->removeAddressPrefixIgnoringSpaces(
-            $normalizedAddress,
-            $baseAddress
-        );
-
-        /**
-         * もしベース住所を正常に切り出せなかった場合、
-         * 最初の数字から詳細住所を重新取得。
-         */
-        if ($detail === '') {
-            $detail = $this->extractDetailFromSearchBase(
+        $detail =
+            $this->extractDetailFromSearchBase(
                 $normalizedAddress
             );
-        }
 
         /**
          * DBに存在しないため、
@@ -668,21 +686,34 @@ class AddressController extends Controller
 
     /**
      * 詳細住所を取得するためのフォールバック処理
+     *
+     * 最初の数字から後ろを詳細住所として取得する。
+     *
+     * 例：
+     *
+     * 仙台市太白区緑ヶ丘 4-30-3 アークベース緑ヶ丘 ll 201
+     *
+     * ↓
+     *
+     * 4-30-3 アークベース緑ヶ丘 ll 201
      */
     private function extractDetailFromSearchBase(
         string $address
     ): string {
-        $address = $this->normalizeSpaces($address);
+        $address =
+            $this->normalizeSpaces($address);
 
         if ($address === '') {
             return '';
         }
 
-        if (preg_match(
-            '/^\D*?(\d.*)$/u',
-            $address,
-            $matches
-        )) {
+        if (
+            preg_match(
+                '/^\D*?(\d.*)$/u',
+                $address,
+                $matches
+            )
+        ) {
             return trim($matches[1]);
         }
 
@@ -697,6 +728,7 @@ class AddressController extends Controller
      * 宮城県仙台市青葉区一番町4-30-3 グリーンハイツ 201
      *
      * ↓
+     *
      * 4-30-3 グリーンハイツ 201
      */
     private function extractDetailFromMatchedAddress(
@@ -707,24 +739,28 @@ class AddressController extends Controller
             return '';
         }
 
-        $input = $this->normalizeSpaces(
-            $inputAddress
-        );
+        $input =
+            $this->normalizeSpaces(
+                $inputAddress
+            );
 
-        $base = $address->prefecture
-            . $address->city
-            . $address->town;
+        $base =
+            $address->prefecture .
+            $address->city .
+            $address->town;
 
-        $base = $this->normalizeSpaces($base);
+        $base =
+            $this->normalizeSpaces($base);
 
         /**
-         * DBのcityなどに入っているスペースを無視して
+         * DBのcityなどに入っているスペースを無視して、
          * 入力住所からDB住所部分を削除する。
          */
-        $detail = $this->removeAddressPrefixIgnoringSpaces(
-            $input,
-            $base
-        );
+        $detail =
+            $this->removeAddressPrefixIgnoringSpaces(
+                $input,
+                $base
+            );
 
         return trim($detail);
     }
@@ -736,10 +772,12 @@ class AddressController extends Controller
      * 仙台市青葉区一番町4-30-3 グリーンハイツ 201
      *
      * ↓
+     *
      * 仙台市青葉区一番町
      */
-    private function extractSearchBase(string $address): string
-    {
+    private function extractSearchBase(
+        string $address
+    ): string {
         $address = trim($address);
 
         if ($address === '') {
@@ -753,11 +791,13 @@ class AddressController extends Controller
          * 町域名そのものに数字が含まれるケースについては
          * 従来検索を優先する。
          */
-        if (preg_match(
-            '/^(.*?)(\d.*)$/u',
-            $address,
-            $matches
-        )) {
+        if (
+            preg_match(
+                '/^(.*?)(\d.*)$/u',
+                $address,
+                $matches
+            )
+        ) {
             $base = trim($matches[1]);
 
             if ($base !== '') {
@@ -776,8 +816,11 @@ class AddressController extends Controller
         string $input,
         string $base
     ): string {
-        $input = $this->normalizeSpaces($input);
-        $base = $this->normalizeSpaces($base);
+        $input =
+            $this->normalizeSpaces($input);
+
+        $base =
+            $this->normalizeSpaces($base);
 
         if (
             $input === '' ||
@@ -786,8 +829,11 @@ class AddressController extends Controller
             return '';
         }
 
-        $inputLength = mb_strlen($input);
-        $baseLength = mb_strlen($base);
+        $inputLength =
+            mb_strlen($input);
+
+        $baseLength =
+            mb_strlen($base);
 
         $inputIndex = 0;
         $baseIndex = 0;
@@ -796,22 +842,24 @@ class AddressController extends Controller
             $inputIndex < $inputLength &&
             $baseIndex < $baseLength
         ) {
-            $inputChar = mb_substr(
-                $input,
-                $inputIndex,
-                1
-            );
+            $inputChar =
+                mb_substr(
+                    $input,
+                    $inputIndex,
+                    1
+                );
 
             if (preg_match('/\s/u', $inputChar)) {
                 $inputIndex++;
                 continue;
             }
 
-            $baseChar = mb_substr(
-                $base,
-                $baseIndex,
-                1
-            );
+            $baseChar =
+                mb_substr(
+                    $base,
+                    $baseIndex,
+                    1
+                );
 
             if ($inputChar !== $baseChar) {
                 return '';
@@ -826,11 +874,12 @@ class AddressController extends Controller
         }
 
         while ($inputIndex < $inputLength) {
-            $char = mb_substr(
-                $input,
-                $inputIndex,
-                1
-            );
+            $char =
+                mb_substr(
+                    $input,
+                    $inputIndex,
+                    1
+                );
 
             if (!preg_match('/\s/u', $char)) {
                 break;
@@ -866,7 +915,8 @@ class AddressController extends Controller
             'room' => '',
         ];
 
-        $detail = $this->normalizeSpaces($detail);
+        $detail =
+            $this->normalizeSpaces($detail);
 
         if ($detail === '') {
             return $result;
@@ -897,15 +947,22 @@ class AddressController extends Controller
         );
 
         /**
-         * ① 「201号室」「201号」「Room 201」などを先に取得
+         * ①
+         * 「201号室」
+         * 「201号」
+         * 「Room 201」
+         * 「#201」
+         * などを先に取得
          */
         $room = '';
 
-        if (preg_match(
-            '/(?:^|\s)Room\s*([0-9A-Za-z-]+)\s*$/iu',
-            $detail,
-            $matches
-        )) {
+        if (
+            preg_match(
+                '/(?:^|\s)Room\s*([0-9A-Za-z-]+)\s*$/iu',
+                $detail,
+                $matches
+            )
+        ) {
             $room = $matches[1];
 
             $detail = preg_replace(
@@ -913,11 +970,13 @@ class AddressController extends Controller
                 '',
                 $detail
             );
-        } elseif (preg_match(
-            '/(?:^|\s)#\s*([0-9A-Za-z-]+)\s*$/u',
-            $detail,
-            $matches
-        )) {
+        } elseif (
+            preg_match(
+                '/(?:^|\s)#\s*([0-9A-Za-z-]+)\s*$/u',
+                $detail,
+                $matches
+            )
+        ) {
             $room = $matches[1];
 
             $detail = preg_replace(
@@ -925,11 +984,13 @@ class AddressController extends Controller
                 '',
                 $detail
             );
-        } elseif (preg_match(
-            '/(?:^|\s)([0-9A-Za-z-]+)\s*号室\s*$/u',
-            $detail,
-            $matches
-        )) {
+        } elseif (
+            preg_match(
+                '/(?:^|\s)([0-9A-Za-z-]+)\s*号室\s*$/u',
+                $detail,
+                $matches
+            )
+        ) {
             $room = $matches[1];
 
             $detail = preg_replace(
@@ -937,11 +998,13 @@ class AddressController extends Controller
                 '',
                 $detail
             );
-        } elseif (preg_match(
-            '/(?:^|\s)([0-9A-Za-z-]+)\s*号\s*$/u',
-            $detail,
-            $matches
-        )) {
+        } elseif (
+            preg_match(
+                '/(?:^|\s)([0-9A-Za-z-]+)\s*号\s*$/u',
+                $detail,
+                $matches
+            )
+        ) {
             $room = $matches[1];
 
             $detail = preg_replace(
@@ -954,7 +1017,8 @@ class AddressController extends Controller
         $detail = trim($detail);
 
         /**
-         * ② 建物名の後ろに単純な部屋番号がある場合
+         * ②
+         * 建物名の後ろに単純な部屋番号がある場合。
          *
          * 例：
          * 4-30-3 グリーンハイツ 201
@@ -975,19 +1039,21 @@ class AddressController extends Controller
              * 住所番号そのものを部屋番号として取らないよう、
              * その前に空白が存在する場合のみ部屋番号とする。
              */
-            $roomPosition = mb_strrpos(
-                $detail,
-                $candidateRoom
-            );
+            $roomPosition =
+                mb_strrpos(
+                    $detail,
+                    $candidateRoom
+                );
 
             if ($roomPosition !== false) {
-                $beforeRoom = trim(
-                    mb_substr(
-                        $detail,
-                        0,
-                        $roomPosition
-                    )
-                );
+                $beforeRoom =
+                    trim(
+                        mb_substr(
+                            $detail,
+                            0,
+                            $roomPosition
+                        )
+                    );
 
                 if (
                     $beforeRoom !== '' &&
@@ -1011,52 +1077,62 @@ class AddressController extends Controller
          */
         $number = '';
 
-        if (preg_match(
-            '/^(\d+)丁目(\d+)(?:番地?|番)(\d+)(?:号)?/u',
-            $detail,
-            $matches
-        )) {
-            $number = $matches[1]
-                . '-'
-                . $matches[2]
-                . '-'
-                . $matches[3];
+        if (
+            preg_match(
+                '/^(\d+)丁目(\d+)(?:番地?|番)(\d+)(?:号)?/u',
+                $detail,
+                $matches
+            )
+        ) {
+            $number =
+                $matches[1] .
+                '-' .
+                $matches[2] .
+                '-' .
+                $matches[3];
 
             $detail = mb_substr(
                 $detail,
                 mb_strlen($matches[0])
             );
-        } elseif (preg_match(
-            '/^(\d+)丁目(\d+)(?:番地?|番)?-?(\d+)(?:号)?/u',
-            $detail,
-            $matches
-        )) {
-            $number = $matches[1]
-                . '-'
-                . $matches[2]
-                . '-'
-                . $matches[3];
+        } elseif (
+            preg_match(
+                '/^(\d+)丁目(\d+)(?:番地?|番)?-?(\d+)(?:号)?/u',
+                $detail,
+                $matches
+            )
+        ) {
+            $number =
+                $matches[1] .
+                '-' .
+                $matches[2] .
+                '-' .
+                $matches[3];
 
             $detail = mb_substr(
                 $detail,
                 mb_strlen($matches[0])
             );
-        } elseif (preg_match(
-            '/^(\d+(?:-\d+){1,3})(?:号)?/u',
-            $detail,
-            $matches
-        )) {
+        } elseif (
+            preg_match(
+                '/^(\d+(?:-\d+){1,3})(?:号)?/u',
+                $detail,
+                $matches
+            )
+        ) {
             $number = $matches[1];
 
             $detail = mb_substr(
                 $detail,
                 mb_strlen($matches[0])
             );
-        } elseif (preg_match(
-            '/^(\d+)(?:丁目|番地?|番|号)/u',
-            $detail,
-            $matches
-        )) {
+        } elseif (
+            preg_match(
+                '/^(\d+)(?:丁目|番地?|番|号)/u',
+                $detail,
+                $matches
+            )
+        ) {
             $number = $matches[1];
 
             $detail = mb_substr(
@@ -1219,8 +1295,9 @@ class AddressController extends Controller
     /**
      * スペースを正規化
      */
-    private function normalizeSpaces(string $text): string
-    {
+    private function normalizeSpaces(
+        string $text
+    ): string {
         $text = str_replace(
             ['　'],
             [' '],
@@ -1237,8 +1314,9 @@ class AddressController extends Controller
     /**
      * 名前を整形
      */
-    private function formatName(string $name): string
-    {
+    private function formatName(
+        string $name
+    ): string {
         return ucwords(
             strtolower(
                 trim($name)
@@ -1249,8 +1327,9 @@ class AddressController extends Controller
     /**
      * 市区町村名を整形
      */
-    private function formatCity(string $city): string
-    {
+    private function formatCity(
+        string $city
+    ): string {
         $city = $this->formatName($city);
 
         $city = preg_replace(
@@ -1289,8 +1368,9 @@ class AddressController extends Controller
     /**
      * 町域名を整形
      */
-    private function formatTown(string $town): string
-    {
+    private function formatTown(
+        string $town
+    ): string {
         return $this->formatName($town);
     }
 }
