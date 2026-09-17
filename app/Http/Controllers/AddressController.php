@@ -12,8 +12,9 @@ class AddressController extends Controller
 {
     private JapaneseRomajiService $romajiService;
 
-    public function __construct(JapaneseRomajiService $romajiService)
-    {
+    public function __construct(
+        JapaneseRomajiService $romajiService
+    ) {
         $this->romajiService = $romajiService;
     }
 
@@ -128,7 +129,7 @@ class AddressController extends Controller
                 ->with('searchType', 'address');
         }
 
-        /*
+        /**
          * 表示用の元入力はそのまま保持する。
          *
          * 検索・解析には正規化した住所を使用する。
@@ -137,19 +138,21 @@ class AddressController extends Controller
             $inputAddress
         );
 
-        /*
+        /**
          * 住所の先頭に郵便番号が入力されていた場合は除去する。
          *
          * 例：
          * 〒980-0811 仙台市青葉区一番町4-30-3
+         *
          * ↓
+         *
          * 仙台市青葉区一番町4-30-3
          */
         $normalizedAddress = $this->removeLeadingPostalCode(
             $normalizedAddress
         );
 
-        /*
+        /**
          * 検索用住所。
          *
          * 空白をすべて除去する。
@@ -158,17 +161,18 @@ class AddressController extends Controller
             $normalizedAddress
         );
 
-        /*
+        /**
          * ① 住所全体でDB検索
          */
         $addresses = $this->findAddressesByFullAddress(
             $searchAddress
         );
 
-        /*
+        /**
          * ② 詳細住所を除いたベース住所でDB検索
          *
          * 例：
+         *
          * 仙台市青葉区一番町4-30-3
          *
          * ↓
@@ -190,7 +194,7 @@ class AddressController extends Controller
             }
         }
 
-        /*
+        /**
          * ③ DBに見つかった場合
          */
         if ($addresses->isNotEmpty()) {
@@ -206,7 +210,7 @@ class AddressController extends Controller
                 );
             }
         } else {
-            /*
+            /**
              * ④ DBに住所がない場合
              *
              * DBにないことを「変換失敗」としない。
@@ -283,7 +287,7 @@ class AddressController extends Controller
         while (($row = fgetcsv($handle)) !== false) {
             $lineNumber++;
 
-            /*
+            /**
              * 空行をスキップ
              */
             if (
@@ -293,7 +297,7 @@ class AddressController extends Controller
                 continue;
             }
 
-            /*
+            /**
              * 2列未満の場合
              */
             if (count($row) < 2) {
@@ -306,7 +310,7 @@ class AddressController extends Controller
                     );
             }
 
-            /*
+            /**
              * UTF-8 BOM除去
              */
             if ($lineNumber === 1) {
@@ -325,7 +329,7 @@ class AddressController extends Controller
                 (string) $row[1]
             );
 
-            /*
+            /**
              * ヘッダーをスキップ
              */
             $headerPostal = mb_strtolower(
@@ -353,7 +357,7 @@ class AddressController extends Controller
                 'japanese_address' => $japaneseAddress,
             ];
 
-            /*
+            /**
              * 最大100件
              */
             if (count($rows) > 100) {
@@ -372,14 +376,14 @@ class AddressController extends Controller
         $csvResults = [];
 
         foreach ($rows as $row) {
-            /*
+            /**
              * 郵便番号を全角・半角を含めて正規化
              */
             $postalCode = $this->normalizePostalCode(
                 $row['postal_code']
             );
 
-            /*
+            /**
              * 住所を正規化
              */
             $japaneseAddress = trim(
@@ -402,7 +406,7 @@ class AddressController extends Controller
 
             $postalAddress = null;
 
-            /*
+            /**
              * ① 郵便番号で検索
              */
             if ($postalCode !== '') {
@@ -412,7 +416,7 @@ class AddressController extends Controller
                 )->first();
             }
 
-            /*
+            /**
              * ② 郵便番号で見つからなかった場合、
              * 日本語住所から検索
              */
@@ -425,7 +429,7 @@ class AddressController extends Controller
                         $normalizedAddress
                     );
 
-                /*
+                /**
                  * 住所全体
                  */
                 $postalAddress =
@@ -433,7 +437,7 @@ class AddressController extends Controller
                         $searchAddress
                     );
 
-                /*
+                /**
                  * 詳細住所を除いたベース住所
                  */
                 if (!$postalAddress) {
@@ -454,7 +458,7 @@ class AddressController extends Controller
                 }
             }
 
-            /*
+            /**
              * ③ DBに見つかった場合
              */
             if ($postalAddress) {
@@ -483,7 +487,7 @@ class AddressController extends Controller
                 continue;
             }
 
-            /*
+            /**
              * ④ DBに見つからない場合
              *
              * 入力住所から自前で解析する。
@@ -511,7 +515,7 @@ class AddressController extends Controller
                 }
             }
 
-            /*
+            /**
              * 本当に解析できない場合のみエラー
              */
             $csvResults[] = [
@@ -549,7 +553,7 @@ class AddressController extends Controller
                     'w'
                 );
 
-                /*
+                /**
                  * UTF-8 BOM
                  */
                 fwrite(
@@ -594,7 +598,7 @@ class AddressController extends Controller
         PostalCode $address,
         string $detail = ''
     ): void {
-        /*
+        /**
          * DBにromajiがある場合は、
          * JapaneseRomajiServiceで漢字を無理に変換しない。
          */
@@ -671,7 +675,7 @@ class AddressController extends Controller
             return null;
         }
 
-        /*
+        /**
          * 先頭郵便番号を除去
          */
         $inputAddress =
@@ -679,7 +683,7 @@ class AddressController extends Controller
                 $inputAddress
             );
 
-        /*
+        /**
          * 検索用住所
          */
         $addressWithoutSpaces =
@@ -687,7 +691,7 @@ class AddressController extends Controller
                 $inputAddress
             );
 
-        /*
+        /**
          * 最初の数字より前をベース住所とする
          */
         $baseAddress =
@@ -699,7 +703,7 @@ class AddressController extends Controller
             return null;
         }
 
-        /*
+        /**
          * 最初の数字から後ろを詳細住所として取得
          */
         $detail =
@@ -707,7 +711,7 @@ class AddressController extends Controller
                 $inputAddress
             );
 
-        /*
+        /**
          * fallbackでもDBから分かる範囲は利用する。
          *
          * 例：
@@ -735,7 +739,7 @@ class AddressController extends Controller
 
         $address = new PostalCode();
 
-        /*
+        /**
          * 郵便番号は、
          * 入力されているものだけ使用する。
          *
@@ -762,7 +766,7 @@ class AddressController extends Controller
         $address->town_romaji =
             $resolved['town_romaji'] ?? '';
 
-        /*
+        /**
          * DBで町域まで解決できなかった場合でも、
          * 入力されたbaseAddressを保持する。
          */
@@ -817,7 +821,7 @@ class AddressController extends Controller
             return $result;
         }
 
-        /*
+        /**
          * 都道府県＋市区町村の候補を取得。
          *
          * 市区町村数は町域数よりかなり少ないため、
@@ -854,7 +858,7 @@ class AddressController extends Controller
                     $cityName
                 );
 
-            /*
+            /**
              * 都道府県＋市区町村
              */
             if (
@@ -869,6 +873,7 @@ class AddressController extends Controller
 
                 if ($length > $bestLength) {
                     $bestLength = $length;
+
                     $bestCity = [
                         'prefecture' =>
                             $prefecture,
@@ -888,10 +893,11 @@ class AddressController extends Controller
                 }
             }
 
-            /*
+            /**
              * 市区町村だけ
              *
              * 例：
+             *
              * 仙台市太白区緑ヶ丘
              *
              * 入力に「宮城県」がなくても
@@ -909,6 +915,7 @@ class AddressController extends Controller
 
                 if ($length > $bestLength) {
                     $bestLength = $length;
+
                     $bestCity = [
                         'prefecture' =>
                             $prefecture,
@@ -929,7 +936,7 @@ class AddressController extends Controller
             }
         }
 
-        /*
+        /**
          * 市区町村が見つかった場合
          */
         if ($bestCity !== null) {
@@ -954,7 +961,7 @@ class AddressController extends Controller
                 );
 
             if ($remaining !== '') {
-                /*
+                /**
                  * まず同じ市区町村内で町域を探す。
                  */
                 $townCandidates =
@@ -991,8 +998,8 @@ class AddressController extends Controller
                         break;
                     }
 
-                    /*
-                     * townが入力baseの末尾に含まれるケース。
+                    /**
+                     * townが入力baseの先頭に含まれるケース。
                      */
                     if (
                         $normalizedTown !== '' &&
@@ -1011,7 +1018,7 @@ class AddressController extends Controller
                     }
                 }
 
-                /*
+                /**
                  * 同じ市区町村内にない場合、
                  * 全国の同名町域から安全にromajiを取得する。
                  *
@@ -1036,7 +1043,7 @@ class AddressController extends Controller
                             $bestTown->town_romaji ?? ''
                         );
                 } else {
-                    /*
+                    /**
                      * DBに町域がない場合でも、
                      * 入力された町域をそのまま保持する。
                      */
@@ -1048,7 +1055,7 @@ class AddressController extends Controller
             return $result;
         }
 
-        /*
+        /**
          * 市区町村自体が見つからなかった場合。
          *
          * 町域全体をそのまま保持する。
@@ -1081,7 +1088,6 @@ class AddressController extends Controller
                 ->get();
 
         $romajiValues = [];
-
         $firstCandidate = null;
 
         foreach (
@@ -1128,14 +1134,14 @@ class AddressController extends Controller
                 array_unique($romajiValues)
             );
 
-        /*
+        /**
          * 読みが一意の場合のみ使用。
          */
         if (count($romajiValues) !== 1) {
             return null;
         }
 
-        /*
+        /**
          * 元データのtownを保持しつつ、
          * romajiだけ利用できるようにする。
          */
@@ -1165,7 +1171,7 @@ class AddressController extends Controller
                 $address
             );
 
-        /*
+        /**
          * 最初の数字から後ろを詳細住所とする。
          *
          * 全角数字はnormalizeAddressText()で
@@ -1189,6 +1195,9 @@ class AddressController extends Controller
     /**
      * DB住所に含まれる
      * 都道府県＋市区町村＋町域以降の詳細住所を取得する。
+     *
+     * DBは「住所を完全に一致させるフィルター」ではなく、
+     * 分かる範囲を取得するための補助として扱う。
      */
     private function extractDetailFromMatchedAddress(
         string $inputAddress,
@@ -1218,11 +1227,8 @@ class AddressController extends Controller
                 $base
             );
 
-        /*
-         * DB住所部分を除去。
-         *
-         * 入力側に空白が入っていても、
-         * 全角・半角が混在していても対応する。
+        /**
+         * まず都道府県＋市区町村＋町域で除去。
          */
         $detail =
             $this->removeAddressPrefixIgnoringSpaces(
@@ -1230,7 +1236,7 @@ class AddressController extends Controller
                 $base
             );
 
-        /*
+        /**
          * prefectureが入力されていない場合、
          * city + townだけでも試す。
          */
@@ -1251,7 +1257,7 @@ class AddressController extends Controller
                 );
         }
 
-        /*
+        /**
          * cityも入力されていない場合、
          * townだけでも試す。
          */
@@ -1265,6 +1271,19 @@ class AddressController extends Controller
                 $this->removeAddressPrefixIgnoringSpaces(
                     $input,
                     $town
+                );
+        }
+
+        /**
+         * DBの住所部分を正確に除去できなかった場合でも、
+         * 詳細住所を捨てない。
+         *
+         * 最初の数字以降をそのまま詳細住所として扱う。
+         */
+        if ($detail === '') {
+            $detail =
+                $this->extractDetailFromSearchBase(
+                    $input
                 );
         }
 
@@ -1286,7 +1305,7 @@ class AddressController extends Controller
             return '';
         }
 
-        /*
+        /**
          * 最初の数字から後ろを詳細住所として扱う。
          */
         if (
@@ -1332,7 +1351,7 @@ class AddressController extends Controller
             return '';
         }
 
-        /*
+        /**
          * 比較用には空白を除去。
          *
          * これにより、
@@ -1360,7 +1379,7 @@ class AddressController extends Controller
             return '';
         }
 
-        /*
+        /**
          * 先頭がDB住所と一致しているか確認。
          */
         if (
@@ -1372,7 +1391,7 @@ class AddressController extends Controller
             return '';
         }
 
-        /*
+        /**
          * DB住所の文字数分だけ、
          * 元の入力から詳細住所位置を求める。
          */
@@ -1396,7 +1415,7 @@ class AddressController extends Controller
                     1
                 );
 
-            /*
+            /**
              * 入力側の空白は無視。
              */
             if (
@@ -1413,7 +1432,7 @@ class AddressController extends Controller
             $inputIndex++;
         }
 
-        /*
+        /**
          * DB住所分を超えた位置から
          * 残りを詳細住所とする。
          */
@@ -1447,7 +1466,7 @@ class AddressController extends Controller
             return $result;
         }
 
-        /*
+        /**
          * 住所番号部分で使用するハイフンだけ統一する。
          *
          * 「ー」は日本語の長音にも使われるため、
@@ -1459,7 +1478,7 @@ class AddressController extends Controller
                 $detail
             );
 
-        /*
+        /**
          * ① 部屋番号を先に取得
          *
          * 201号室
@@ -1469,7 +1488,7 @@ class AddressController extends Controller
          */
         $room = '';
 
-        /*
+        /**
          * Room 201
          */
         if (
@@ -1489,7 +1508,7 @@ class AddressController extends Controller
                 );
         }
 
-        /*
+        /**
          * #201
          */
         elseif (
@@ -1509,7 +1528,7 @@ class AddressController extends Controller
                 );
         }
 
-        /*
+        /**
          * 201号室
          */
         elseif (
@@ -1529,7 +1548,7 @@ class AddressController extends Controller
                 );
         }
 
-        /*
+        /**
          * 201号
          */
         elseif (
@@ -1552,7 +1571,7 @@ class AddressController extends Controller
         $detail =
             trim($detail);
 
-        /*
+        /**
          * ② 建物名の後ろに単純な部屋番号がある場合。
          *
          * 例：
@@ -1590,7 +1609,7 @@ class AddressController extends Controller
                         )
                     );
 
-                /*
+                /**
                  * 前に何か文字があり、
                  * 住所全体に空白がある場合のみ
                  * 部屋番号と判断。
@@ -1611,7 +1630,7 @@ class AddressController extends Controller
             }
         }
 
-        /*
+        /**
          * ③ 番地部分を取得
          *
          * 4-30-3
@@ -1621,7 +1640,7 @@ class AddressController extends Controller
          */
         $number = '';
 
-        /*
+        /**
          * 4丁目30番3号
          */
         if (
@@ -1645,7 +1664,7 @@ class AddressController extends Controller
                 );
         }
 
-        /*
+        /**
          * 4丁目30番3
          */
         elseif (
@@ -1669,7 +1688,7 @@ class AddressController extends Controller
                 );
         }
 
-        /*
+        /**
          * 4-30-3
          * 4 - 30 - 3
          * 4-30
@@ -1695,7 +1714,7 @@ class AddressController extends Controller
                 );
         }
 
-        /*
+        /**
          * 4番地3号
          */
         elseif (
@@ -1717,7 +1736,7 @@ class AddressController extends Controller
                 );
         }
 
-        /*
+        /**
          * 4丁目
          * 4番地
          * 4番
@@ -1745,8 +1764,11 @@ class AddressController extends Controller
                 $number;
         }
 
-        /*
+        /**
          * ④ 残りを建物名として扱う。
+         *
+         * 重要：
+         * ここで残った文字列を捨てない。
          */
         $building =
             trim($detail);
@@ -1760,7 +1782,7 @@ class AddressController extends Controller
                 );
         }
 
-        /*
+        /**
          * ⑤ 部屋番号
          */
         if ($room !== '') {
@@ -1780,7 +1802,7 @@ class AddressController extends Controller
     ): string {
         $parts = [];
 
-        /*
+        /**
          * formatAddress()で解決済みの値を優先。
          */
         $town =
@@ -1798,7 +1820,7 @@ class AddressController extends Controller
                 $address->international_prefecture ?? ''
             );
 
-        /*
+        /**
          * 町域 + 番地
          */
         $townPart =
@@ -1818,7 +1840,7 @@ class AddressController extends Controller
                 $townPart;
         }
 
-        /*
+        /**
          * 建物名
          */
         if (!empty($detail['building'])) {
@@ -1826,7 +1848,7 @@ class AddressController extends Controller
                 $detail['building'];
         }
 
-        /*
+        /**
          * 部屋番号
          */
         if (!empty($detail['room'])) {
@@ -1835,7 +1857,7 @@ class AddressController extends Controller
                 $detail['room'];
         }
 
-        /*
+        /**
          * 市区町村
          */
         if ($city !== '') {
@@ -1843,7 +1865,7 @@ class AddressController extends Controller
                 $city;
         }
 
-        /*
+        /**
          * 都道府県
          */
         if ($prefecture !== '') {
@@ -1851,7 +1873,7 @@ class AddressController extends Controller
                 $prefecture;
         }
 
-        /*
+        /**
          * 郵便番号
          */
         if (!empty($address->postal_code)) {
@@ -1859,7 +1881,7 @@ class AddressController extends Controller
                 $address->postal_code;
         }
 
-        /*
+        /**
          * 国名
          */
         $parts[] =
@@ -1926,8 +1948,6 @@ class AddressController extends Controller
     /**
      * 入力文字列を全角・半角を含めて正規化する。
      *
-     * ここが今回の重要部分。
-     *
      * 例：
      *
      * 仙台市　太白区　緑ヶ丘
@@ -1946,11 +1966,10 @@ class AddressController extends Controller
             return '';
         }
 
-        /*
+        /**
          * 全角英数字 → 半角
          * 半角カタカナ → 全角カタカナ
          *
-         * 例：
          * ２０１ → 201
          * ｌｌ → ll
          */
@@ -1961,7 +1980,7 @@ class AddressController extends Controller
                 'UTF-8'
             );
 
-        /*
+        /**
          * 全角スペースを半角スペースへ
          */
         $text =
@@ -1971,7 +1990,7 @@ class AddressController extends Controller
                 $text
             );
 
-        /*
+        /**
          * 改行・タブなどをスペースへ
          */
         $text =
@@ -1981,7 +2000,7 @@ class AddressController extends Controller
                 $text
             );
 
-        /*
+        /**
          * NBSPなどの空白も通常スペースとして扱う。
          */
         $text =
@@ -1991,7 +2010,7 @@ class AddressController extends Controller
                 $text
             );
 
-        /*
+        /**
          * 全角記号を統一。
          *
          * 「ー」は長音符の可能性があるため、
@@ -2065,7 +2084,7 @@ class AddressController extends Controller
             return '';
         }
 
-        /*
+        /**
          * 住所名でよくある
          * ヶ / ケ の表記揺れを比較用に統一。
          *
@@ -2108,7 +2127,7 @@ class AddressController extends Controller
             return '';
         }
 
-        /*
+        /**
          * 全角英数字を半角へ。
          */
         $postalCode =
@@ -2118,7 +2137,7 @@ class AddressController extends Controller
                 'UTF-8'
             );
 
-        /*
+        /**
          * 郵便記号を除去。
          */
         $postalCode =
@@ -2128,7 +2147,7 @@ class AddressController extends Controller
                 $postalCode
             );
 
-        /*
+        /**
          * 各種ハイフンと空白を除去。
          */
         $postalCode =
@@ -2165,7 +2184,7 @@ class AddressController extends Controller
             return '';
         }
 
-        /*
+        /**
          * 〒980-0811
          */
         $address =
@@ -2188,8 +2207,8 @@ class AddressController extends Controller
     private function normalizeAddressHyphens(
         string $text
     ): string {
-        /*
-         * 数字の間にある「ー」をハイフンにする。
+        /**
+         * 数字の間にあるハイフン類を統一。
          *
          * 4ー30ー3
          * ↓
@@ -2202,7 +2221,7 @@ class AddressController extends Controller
                 $text
             );
 
-        /*
+        /**
          * その他の明確なハイフン記号
          */
         $text =
@@ -2246,7 +2265,7 @@ class AddressController extends Controller
             return '';
         }
 
-        /*
+        /**
          * 漢字を含む場合、
          * DBに安全な読みがない限り
          * generic converterに渡さない。
@@ -2257,7 +2276,7 @@ class AddressController extends Controller
                 $original
             )
         ) {
-            /*
+            /**
              * まずtownとして一意のromajiを探す。
              */
             $town =
@@ -2278,14 +2297,14 @@ class AddressController extends Controller
                 );
             }
 
-            /*
+            /**
              * 安全な読みがない場合は
              * 壊れたローマ字を生成しない。
              */
             return $original;
         }
 
-        /*
+        /**
          * 漢字を含まない場合は通常変換。
          */
         return $this->romajiService->convert(
