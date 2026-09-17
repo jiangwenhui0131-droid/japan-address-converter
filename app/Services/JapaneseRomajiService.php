@@ -49,7 +49,7 @@ class JapaneseRomajiService
         /**
          * 组合音
          *
-         * 必须优先于单字符转换。
+         * 必须优先处理。
          */
         $digraphs = [
             'キャ' => 'kya',
@@ -96,9 +96,9 @@ class JapaneseRomajiService
             'リュ' => 'ryu',
             'リョ' => 'ryo',
 
+            // 外来语
             'ティ' => 'ti',
             'ディ' => 'di',
-
             'トゥ' => 'tu',
             'ドゥ' => 'du',
 
@@ -134,21 +134,14 @@ class JapaneseRomajiService
             'グィ' => 'gwi',
             'グェ' => 'gwe',
             'グォ' => 'gwo',
+
+            'イェ' => 'ye',
+            'ウァ' => 'wa',
+            'ウュ' => 'wyu',
         ];
 
         /**
-         * 先把组合音转换成临时占位符。
-         *
-         * 不能直接 str_replace 成罗马字，
-         * 因为后面的 ッ、ー 需要知道前后关系。
-         */
-        $text = $this->replaceDigraphs(
-            $text,
-            $digraphs
-        );
-
-        /**
-         * 单音
+         * 普通假名
          */
         $kana = [
             'ア' => 'a',
@@ -238,6 +231,7 @@ class JapaneseRomajiService
 
             'ン' => 'n',
 
+            // 小假名
             'ァ' => 'a',
             'ィ' => 'i',
             'ゥ' => 'u',
@@ -246,6 +240,10 @@ class JapaneseRomajiService
             'ヮ' => 'wa',
 
             'ヴ' => 'vu',
+
+            // ヶ / ヵ
+            'ヶ' => 'ke',
+            'ヵ' => 'ka',
         ];
 
         $chars = mb_str_split(
@@ -255,38 +253,28 @@ class JapaneseRomajiService
         );
 
         $result = '';
-
         $count = count($chars);
 
         for ($i = 0; $i < $count; $i++) {
-
             $char = $chars[$i];
 
             /**
-             * 组合音占位符
+             * 组合音
+             *
+             * 当前字符 + 下一个字符
              */
-            if (
-                str_starts_with(
-                    $char,
-                    "\u{E000}"
-                )
-            ) {
-                $result .= $char;
-                continue;
+            if (isset($chars[$i + 1])) {
+                $pair = $char . $chars[$i + 1];
+
+                if (isset($digraphs[$pair])) {
+                    $result .= $digraphs[$pair];
+                    $i++;
+                    continue;
+                }
             }
 
             /**
              * 长音符号「ー」
-             *
-             * 根据前一个罗马字的最后元音补充。
-             *
-             * 例：
-             * アー → aa
-             * キー → kii
-             * グー → guu
-             * ベー → bee
-             *
-             * 最后 cleanup 时再决定是否需要自然化。
              */
             if ($char === 'ー') {
                 $vowel = $this->getLastVowel($result);
@@ -300,41 +288,36 @@ class JapaneseRomajiService
 
             /**
              * 促音「ッ」
-             *
-             * 例如：
-             *
-             * ベッド
-             * → beddo
-             *
-             * サッカー
-             * → sakkaa
              */
             if ($char === 'ッ') {
-
                 $nextRomaji = '';
 
-                if (isset($chars[$i + 1])) {
+                // 下一个是组合音
+                if (isset($chars[$i + 2])) {
+                    $pair = $chars[$i + 1] . $chars[$i + 2];
+
+                    if (isset($digraphs[$pair])) {
+                        $nextRomaji = $digraphs[$pair];
+                    }
+                }
+
+                // 下一个是普通假名
+                if ($nextRomaji === '' && isset($chars[$i + 1])) {
                     $next = $chars[$i + 1];
 
-                    if (
-                        isset($kana[$next])
-                    ) {
+                    if (isset($kana[$next])) {
                         $nextRomaji = $kana[$next];
-                    } else {
-                        $nextRomaji =
-                            $this->getDigraphRomaji(
-                                $next
-                            );
                     }
                 }
 
                 if ($nextRomaji !== '') {
-                    $result .=
-                        substr(
-                            $nextRomaji,
-                            0,
-                            1
-                        );
+                    $first = strtolower(
+                        substr($nextRomaji, 0, 1)
+                    );
+
+                    if ($first !== '') {
+                        $result .= $first;
+                    }
                 }
 
                 continue;
@@ -343,12 +326,7 @@ class JapaneseRomajiService
             /**
              * 英文字母
              */
-            if (
-                preg_match(
-                    '/^[A-Za-z]$/',
-                    $char
-                )
-            ) {
+            if (preg_match('/^[A-Za-z]$/', $char)) {
                 $result .= $char;
                 continue;
             }
@@ -356,12 +334,7 @@ class JapaneseRomajiService
             /**
              * 数字
              */
-            if (
-                preg_match(
-                    '/^[0-9]$/',
-                    $char
-                )
-            ) {
+            if (preg_match('/^[0-9]$/', $char)) {
                 $result .= $char;
                 continue;
             }
@@ -375,96 +348,28 @@ class JapaneseRomajiService
             }
 
             /**
-             * 片假名
+             * 普通假名
              */
-            if (
-                isset($kana[$char])
-            ) {
-                $result .=
-                    $kana[$char];
-
+            if (isset($kana[$char])) {
+                $result .= $kana[$char];
                 continue;
             }
 
             /**
              * 其他字符：
-             *
              * 汉字、标点、括号等保持原样。
              */
             $result .= $char;
-        }
-
-        /**
-         * 恢复组合音
-         */
-        foreach ($digraphs as $jp => $romaji) {
-            $placeholder =
-                $this->createPlaceholder($jp);
-
-            $result = str_replace(
-                $placeholder,
-                $romaji,
-                $result
-            );
         }
 
         return $this->cleanupRomaji($result);
     }
 
     /**
-     * 将组合音替换为不会被后续单字符处理影响的占位符。
-     */
-    private function replaceDigraphs(
-        string $text,
-        array $digraphs
-    ): string {
-        foreach ($digraphs as $jp => $romaji) {
-
-            $placeholder =
-                $this->createPlaceholder($jp);
-
-            $text = str_replace(
-                $jp,
-                $placeholder,
-                $text
-            );
-        }
-
-        return $text;
-    }
-
-    /**
-     * 创建 Unicode 私有区占位符。
-     */
-    private function createPlaceholder(
-        string $text
-    ): string {
-        return "\u{E000}"
-            . bin2hex(
-                mb_convert_encoding(
-                    $text,
-                    'UTF-8',
-                    'UTF-8'
-                )
-            )
-            . "\u{E001}";
-    }
-
-    /**
-     * 根据占位符取得组合音的罗马字。
-     */
-    private function getDigraphRomaji(
-        string $char
-    ): string {
-        return '';
-    }
-
-    /**
      * 获取目前结果最后一个元音。
      */
-    private function getLastVowel(
-        string $text
-    ): string {
+    private function getLastVowel(string $text): string
+    {
         $text = trim($text);
 
         if ($text === '') {
@@ -478,9 +383,7 @@ class JapaneseRomajiService
                 $matches
             )
         ) {
-            return strtolower(
-                $matches[1]
-            );
+            return strtolower($matches[1]);
         }
 
         return '';
@@ -489,40 +392,26 @@ class JapaneseRomajiService
     /**
      * 整理最终罗马字。
      */
-    private function cleanupRomaji(
-        string $text
-    ): string {
-        /**
-         * 连续空格 → 一个空格
-         */
+    private function cleanupRomaji(string $text): string
+    {
+        // 连续空格 → 一个空格
         $text = preg_replace(
             '/\s+/u',
             ' ',
             $text
         );
 
-        /**
-         * 去掉空格两侧多余空格
-         */
+        // 去掉首尾空格
         $text = trim($text);
 
-        /**
-         * 不让罗马字中出现奇怪的连接符。
-         */
+        // 去掉连接符
         $text = str_replace(
             '-',
             '',
             $text
         );
 
-        /**
-         * 每个英文单词首字母大写。
-         *
-         * 例如：
-         * aku besu
-         * →
-         * Aku Besu
-         */
+        // 每个英文单词首字母大写
         $words = explode(
             ' ',
             $text
@@ -531,26 +420,20 @@ class JapaneseRomajiService
         $result = [];
 
         foreach ($words as $word) {
-
             if ($word === '') {
                 continue;
             }
 
-            /**
-             * 只有纯英文/数字才做首字母大写。
-             *
-             * 汉字混合内容保持原样。
-             */
+            // 只有纯英文/数字才做首字母大写
             if (
                 preg_match(
                     '/^[A-Za-z0-9]+$/',
                     $word
                 )
             ) {
-                $word =
-                    ucfirst(
-                        strtolower($word)
-                    );
+                $word = ucfirst(
+                    strtolower($word)
+                );
             }
 
             $result[] = $word;
@@ -565,9 +448,8 @@ class JapaneseRomajiService
     /**
      * 平假名 → 片假名
      */
-    private function hiraganaToKatakana(
-        string $text
-    ): string {
+    private function hiraganaToKatakana(string $text): string
+    {
         $chars = mb_str_split(
             $text,
             1,
@@ -577,7 +459,6 @@ class JapaneseRomajiService
         $result = '';
 
         foreach ($chars as $char) {
-
             $code = mb_ord($char);
 
             /**
