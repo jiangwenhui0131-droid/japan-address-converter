@@ -12,36 +12,15 @@ class JapaneseRomajiService
      * - 片假名
      *
      * 汉字不在这里强制转换。
-     * 汉字地名由 PostalCode 数据中的 *_romaji 处理。
+     * 汉字地名应优先使用 PostalCode 数据中的 *_romaji。
      */
     public function convert(string $text): string
     {
-        $text = trim($text);
+        $text = $this->normalizeInput($text);
 
         if ($text === '') {
             return '';
         }
-
-        // 全角英数字 → 半角
-        $text = mb_convert_kana(
-            $text,
-            'as',
-            'UTF-8'
-        );
-
-        // 全角空格 → 半角
-        $text = str_replace(
-            '　',
-            ' ',
-            $text
-        );
-
-        // 连续空格 → 一个空格
-        $text = preg_replace(
-            '/\s+/u',
-            ' ',
-            $text
-        );
 
         // 平假名 → 片假名
         $text = $this->hiraganaToKatakana($text);
@@ -96,7 +75,7 @@ class JapaneseRomajiService
             'リュ' => 'ryu',
             'リョ' => 'ryo',
 
-            // 外来语
+            // 外来語
             'ティ' => 'ti',
             'ディ' => 'di',
             'トゥ' => 'tu',
@@ -228,7 +207,6 @@ class JapaneseRomajiService
 
             'ワ' => 'wa',
             'ヲ' => 'o',
-
             'ン' => 'n',
 
             // 小假名
@@ -241,9 +219,22 @@ class JapaneseRomajiService
 
             'ヴ' => 'vu',
 
-            // ヶ / ヵ
-            'ヶ' => 'ke',
-            'ヵ' => 'ka',
+            /**
+             * 注意：
+             *
+             * ヶ / ヵ 不能直接当普通假名转换。
+             *
+             * 例如：
+             * 緑ヶ丘
+             *
+             * 如果这里写：
+             * ヶ => ke
+             *
+             * 就会得到：
+             * 緑ke丘
+             *
+             * 这是错误的。
+             */
         ];
 
         $chars = mb_str_split(
@@ -260,8 +251,6 @@ class JapaneseRomajiService
 
             /**
              * 组合音
-             *
-             * 当前字符 + 下一个字符
              */
             if (isset($chars[$i + 1])) {
                 $pair = $char . $chars[$i + 1];
@@ -292,17 +281,20 @@ class JapaneseRomajiService
             if ($char === 'ッ') {
                 $nextRomaji = '';
 
-                // 下一个是组合音
                 if (isset($chars[$i + 2])) {
-                    $pair = $chars[$i + 1] . $chars[$i + 2];
+                    $pair =
+                        $chars[$i + 1] .
+                        $chars[$i + 2];
 
                     if (isset($digraphs[$pair])) {
                         $nextRomaji = $digraphs[$pair];
                     }
                 }
 
-                // 下一个是普通假名
-                if ($nextRomaji === '' && isset($chars[$i + 1])) {
+                if (
+                    $nextRomaji === '' &&
+                    isset($chars[$i + 1])
+                ) {
                     $next = $chars[$i + 1];
 
                     if (isset($kana[$next])) {
@@ -326,7 +318,12 @@ class JapaneseRomajiService
             /**
              * 英文字母
              */
-            if (preg_match('/^[A-Za-z]$/', $char)) {
+            if (
+                preg_match(
+                    '/^[A-Za-z]$/',
+                    $char
+                )
+            ) {
                 $result .= $char;
                 continue;
             }
@@ -334,7 +331,12 @@ class JapaneseRomajiService
             /**
              * 数字
              */
-            if (preg_match('/^[0-9]$/', $char)) {
+            if (
+                preg_match(
+                    '/^[0-9]$/',
+                    $char
+                )
+            ) {
                 $result .= $char;
                 continue;
             }
@@ -344,6 +346,22 @@ class JapaneseRomajiService
              */
             if ($char === ' ') {
                 $result .= ' ';
+                continue;
+            }
+
+            /**
+             * ヶ / ヵ
+             *
+             * 这里保留原字符。
+             *
+             * 真正的地名读法应由 PostalCode
+             * 的 town_romaji 等数据决定。
+             */
+            if (
+                $char === 'ヶ' ||
+                $char === 'ヵ'
+            ) {
+                $result .= $char;
                 continue;
             }
 
@@ -363,6 +381,47 @@ class JapaneseRomajiService
         }
 
         return $this->cleanupRomaji($result);
+    }
+
+    /**
+     * 输入地址/名称统一。
+     */
+    private function normalizeInput(string $text): string
+    {
+        $text = trim($text);
+
+        if ($text === '') {
+            return '';
+        }
+
+        /**
+         * 全角英数字 → 半角
+         */
+        $text = mb_convert_kana(
+            $text,
+            'as',
+            'UTF-8'
+        );
+
+        /**
+         * 全角空格 → 半角
+         */
+        $text = str_replace(
+            '　',
+            ' ',
+            $text
+        );
+
+        /**
+         * 连续空白 → 一个半角空格
+         */
+        $text = preg_replace(
+            '/\s+/u',
+            ' ',
+            $text
+        );
+
+        return trim($text);
     }
 
     /**
@@ -394,24 +453,23 @@ class JapaneseRomajiService
      */
     private function cleanupRomaji(string $text): string
     {
-        // 连续空格 → 一个空格
         $text = preg_replace(
             '/\s+/u',
             ' ',
             $text
         );
 
-        // 去掉首尾空格
         $text = trim($text);
 
-        // 去掉连接符
-        $text = str_replace(
-            '-',
-            '',
-            $text
-        );
+        /**
+         * 不在这里随便删除地址中的 -。
+         *
+         * 因为：
+         * 4-30-3
+         *
+         * 是地址番地。
+         */
 
-        // 每个英文单词首字母大写
         $words = explode(
             ' ',
             $text
@@ -424,7 +482,9 @@ class JapaneseRomajiService
                 continue;
             }
 
-            // 只有纯英文/数字才做首字母大写
+            /**
+             * 只有纯英文/数字才首字母大写。
+             */
             if (
                 preg_match(
                     '/^[A-Za-z0-9]+$/',
@@ -461,16 +521,9 @@ class JapaneseRomajiService
         foreach ($chars as $char) {
             $code = mb_ord($char);
 
-            /**
-             * 平假名：
-             * 3041 - 3096
-             *
-             * 片假名：
-             * 30A1 - 30F6
-             */
             if (
-                $code >= 0x3041
-                && $code <= 0x3096
+                $code >= 0x3041 &&
+                $code <= 0x3096
             ) {
                 $char = mb_chr(
                     $code + 0x60,
