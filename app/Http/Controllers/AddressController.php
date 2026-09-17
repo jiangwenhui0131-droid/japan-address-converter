@@ -94,9 +94,53 @@ class AddressController extends Controller
      */
     public function search(Request $request)
     {
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'postal_code' => [
+                    'required',
+                    'string',
+                    'max:20',
+                ],
+            ],
+            [
+                'postal_code.required' => '郵便番号を入力してください。',
+                'postal_code.string' => '郵便番号の形式が正しくありません。',
+                'postal_code.max' => '郵便番号は20文字以内で入力してください。',
+            ]
+        );
+
+        if ($validator->fails()) {
+            return redirect('/')
+                ->withErrors($validator)
+                ->withInput()
+                ->with('searchType', 'postal')
+                ->with('postalCode', (string) $request->input('postal_code', ''));
+        }
+
         $postalCode = $this->normalizePostalCode(
             (string) $request->input('postal_code', '')
         );
+
+        if ($postalCode === '') {
+            return redirect('/')
+                ->withErrors([
+                    'postal_code' => '郵便番号を入力してください。',
+                ])
+                ->withInput()
+                ->with('searchType', 'postal')
+                ->with('postalCode', '');
+        }
+
+        if (!preg_match('/^\d{7}$/', $postalCode)) {
+            return redirect('/')
+                ->withErrors([
+                    'postal_code' => '郵便番号は7桁で入力してください。',
+                ])
+                ->withInput()
+                ->with('searchType', 'postal')
+                ->with('postalCode', $postalCode);
+        }
 
         $addresses = PostalCode::where(
             'postal_code',
@@ -118,12 +162,44 @@ class AddressController extends Controller
      */
     public function searchAddress(Request $request)
     {
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'address' => [
+                    'required',
+                    'string',
+                    'max:500',
+                ],
+            ],
+            [
+                'address.required' => '住所を入力してください。',
+                'address.string' => '住所の形式が正しくありません。',
+                'address.max' => '住所は500文字以内で入力してください。',
+            ]
+        );
+
+        if ($validator->fails()) {
+            return redirect('/')
+                ->withErrors($validator)
+                ->withInput()
+                ->with('addresses', [])
+                ->with(
+                    'inputAddress',
+                    (string) $request->input('address', '')
+                )
+                ->with('searchType', 'address');
+        }
+
         $inputAddress = trim(
             (string) $request->input('address', '')
         );
 
         if ($inputAddress === '') {
             return redirect('/')
+                ->withErrors([
+                    'address' => '住所を入力してください。',
+                ])
+                ->withInput()
                 ->with('addresses', [])
                 ->with('inputAddress', '')
                 ->with('searchType', 'address');
@@ -152,6 +228,17 @@ class AddressController extends Controller
             $normalizedAddress
         );
 
+        if ($normalizedAddress === '') {
+            return redirect('/')
+                ->withErrors([
+                    'address' => '住所を入力してください。',
+                ])
+                ->withInput()
+                ->with('addresses', [])
+                ->with('inputAddress', $inputAddress)
+                ->with('searchType', 'address');
+        }
+
         /**
          * 検索用住所。
          *
@@ -163,6 +250,9 @@ class AddressController extends Controller
 
         /**
          * ① 住所全体でDB検索
+         *
+         * 「緑ヶ丘」と「緑ケ丘」は
+         * 比較時だけ同一として扱う。
          */
         $addresses = $this->findAddressesByFullAddress(
             $searchAddress
@@ -221,7 +311,7 @@ class AddressController extends Controller
 
             if ($fallbackAddress !== null) {
                 $addresses = collect([
-                    $fallbackAddress
+                    $fallbackAddress,
                 ]);
             } else {
                 $addresses = collect();
@@ -239,46 +329,89 @@ class AddressController extends Controller
      */
     public function convertCsv(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'csv_file' => 'required|file|mimes:csv,txt|max:131072',
-        ]);
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'csv_file' => [
+                    'required',
+                    'file',
+                    'mimes:csv,txt',
+                    'max:131072',
+                ],
+            ],
+            [
+                'csv_file.required' => 'CSVまたはTXTファイルを選択してください。',
+                'csv_file.file' => '正しいファイルを選択してください。',
+                'csv_file.mimes' => 'CSVまたはTXTファイルを選択してください。',
+                'csv_file.max' => 'ファイルサイズが大きすぎます。',
+            ]
+        );
 
+        /**
+         * 重要：
+         *
+         * withErrors($validator)
+         * と
+         * csv_error
+         *
+         * の両方を保持する。
+         *
+         * これにより既存Bladeの
+         * session('csv_error')
+         * でも表示でき、
+         * Laravelの$errorsでも表示できる。
+         */
         if ($validator->fails()) {
+            $errorMessage = $validator
+                ->errors()
+                ->first('csv_file');
+
             return redirect('/')
-                ->with(
-                    'csv_error',
-                    $validator->errors()->first('csv_file')
-                );
+                ->withErrors($validator)
+                ->withInput()
+                ->with('csv_error', $errorMessage);
         }
 
         $file = $request->file('csv_file');
 
         if (!$file || !$file->isValid()) {
+            $errorMessage =
+                'ファイルのアップロードに失敗しました。';
+
             return redirect('/')
-                ->with(
-                    'csv_error',
-                    'ファイルのアップロードに失敗しました。'
-                );
+                ->withErrors([
+                    'csv_file' => $errorMessage,
+                ])
+                ->withInput()
+                ->with('csv_error', $errorMessage);
         }
 
         $path = $file->getRealPath();
 
         if (!$path) {
+            $errorMessage =
+                'ファイルを読み込めませんでした。';
+
             return redirect('/')
-                ->with(
-                    'csv_error',
-                    'ファイルを読み込めませんでした。'
-                );
+                ->withErrors([
+                    'csv_file' => $errorMessage,
+                ])
+                ->withInput()
+                ->with('csv_error', $errorMessage);
         }
 
         $handle = fopen($path, 'r');
 
         if ($handle === false) {
+            $errorMessage =
+                'ファイルを開けませんでした。';
+
             return redirect('/')
-                ->with(
-                    'csv_error',
-                    'ファイルを開けませんでした。'
-                );
+                ->withErrors([
+                    'csv_file' => $errorMessage,
+                ])
+                ->withInput()
+                ->with('csv_error', $errorMessage);
         }
 
         $rows = [];
@@ -303,11 +436,15 @@ class AddressController extends Controller
             if (count($row) < 2) {
                 fclose($handle);
 
+                $errorMessage =
+                    "{$lineNumber}行目の形式が正しくありません。";
+
                 return redirect('/')
-                    ->with(
-                        'csv_error',
-                        "{$lineNumber}行目の形式が正しくありません。"
-                    );
+                    ->withErrors([
+                        'csv_file' => $errorMessage,
+                    ])
+                    ->withInput()
+                    ->with('csv_error', $errorMessage);
             }
 
             /**
@@ -363,15 +500,34 @@ class AddressController extends Controller
             if (count($rows) > 100) {
                 fclose($handle);
 
+                $errorMessage =
+                    '一度に変換できる件数は100件までです。';
+
                 return redirect('/')
-                    ->with(
-                        'csv_error',
-                        '一度に変換できる件数は100件までです。'
-                    );
+                    ->withErrors([
+                        'csv_file' => $errorMessage,
+                    ])
+                    ->withInput()
+                    ->with('csv_error', $errorMessage);
             }
         }
 
         fclose($handle);
+
+        /**
+         * 空データの場合
+         */
+        if (empty($rows)) {
+            $errorMessage =
+                '変換する住所データがありません。';
+
+            return redirect('/')
+                ->withErrors([
+                    'csv_file' => $errorMessage,
+                ])
+                ->withInput()
+                ->with('csv_error', $errorMessage);
+        }
 
         $csvResults = [];
 
@@ -713,24 +869,6 @@ class AddressController extends Controller
 
         /**
          * fallbackでもDBから分かる範囲は利用する。
-         *
-         * 例：
-         *
-         * 仙台市太白区緑ヶ丘
-         *
-         * ↓
-         *
-         * city:
-         * 仙台市 太白区
-         *
-         * town:
-         * 緑ヶ丘
-         *
-         * さらにDBに緑ヶ丘のromajiがあれば
-         *
-         * Midorigaoka
-         *
-         * を利用する。
          */
         $resolved =
             $this->resolveFallbackBase(
@@ -787,18 +925,6 @@ class AddressController extends Controller
 
     /**
      * fallback用にDBから住所の構成を解決する。
-     *
-     * 例：
-     *
-     * 仙台市太白区緑ヶ丘
-     *
-     * ↓
-     *
-     * 市区町村：
-     * 仙台市 太白区
-     *
-     * 町域：
-     * 緑ヶ丘
      */
     private function resolveFallbackBase(
         string $baseAddress
@@ -825,8 +951,7 @@ class AddressController extends Controller
          * 都道府県＋市区町村の候補を取得。
          *
          * 市区町村数は町域数よりかなり少ないため、
-         * ここではdistinctで取得してPHP側で
-         * 最長一致を探す。
+         * distinctで取得してPHP側で最長一致を探す。
          */
         $cities = PostalCode::query()
             ->select([
@@ -897,7 +1022,6 @@ class AddressController extends Controller
              * 市区町村だけ
              *
              * 例：
-             *
              * 仙台市太白区緑ヶ丘
              *
              * 入力に「宮城県」がなくても
@@ -990,11 +1114,17 @@ class AddressController extends Controller
                             $townName
                         );
 
+                    /**
+                     * 「緑ヶ丘」と「緑ケ丘」を
+                     * 比較上同じにする。
+                     */
                     if (
                         $normalizedTown !== '' &&
                         $normalizedTown === $remaining
                     ) {
-                        $bestTown = $townCandidate;
+                        $bestTown =
+                            $townCandidate;
+
                         break;
                     }
 
@@ -1021,11 +1151,6 @@ class AddressController extends Controller
                 /**
                  * 同じ市区町村内にない場合、
                  * 全国の同名町域から安全にromajiを取得する。
-                 *
-                 * ただし「最初の1件」を使わない。
-                 *
-                 * 同じtown_romajiしか存在しない場合のみ
-                 * その読みを採用する。
                  */
                 if ($bestTown === null) {
                     $bestTown =
@@ -1131,7 +1256,9 @@ class AddressController extends Controller
 
         $romajiValues =
             array_values(
-                array_unique($romajiValues)
+                array_unique(
+                    $romajiValues
+                )
             );
 
         /**
@@ -1173,9 +1300,6 @@ class AddressController extends Controller
 
         /**
          * 最初の数字から後ろを詳細住所とする。
-         *
-         * 全角数字はnormalizeAddressText()で
-         * 半角数字に統一済み。
          */
         if (
             preg_match(
@@ -1229,6 +1353,9 @@ class AddressController extends Controller
 
         /**
          * まず都道府県＋市区町村＋町域で除去。
+         *
+         * ここでも「緑ヶ丘」と「緑ケ丘」を
+         * 同一として扱う。
          */
         $detail =
             $this->removeAddressPrefixIgnoringSpaces(
@@ -1329,6 +1456,8 @@ class AddressController extends Controller
     /**
      * スペースを保持したまま、
      * 住所の先頭にあるDB住所を削除する。
+     *
+     * 「ヶ」と「ケ」は比較時のみ同一視する。
      */
     private function removeAddressPrefixIgnoringSpaces(
         string $input,
@@ -1354,13 +1483,7 @@ class AddressController extends Controller
         /**
          * 比較用には空白を除去。
          *
-         * これにより、
-         *
-         * 仙台市太白区緑ヶ丘4-30-3
-         *
-         * 仙台市　太白区 緑ヶ丘 4－30－3
-         *
-         * のどちらも同じように扱える。
+         * 「ヶ」「ケ」も比較用に統一。
          */
         $inputWithoutSpaces =
             $this->normalizeAddressForComparison(
@@ -1379,9 +1502,6 @@ class AddressController extends Controller
             return '';
         }
 
-        /**
-         * 先頭がDB住所と一致しているか確認。
-         */
         if (
             !str_starts_with(
                 $inputWithoutSpaces,
@@ -1392,14 +1512,13 @@ class AddressController extends Controller
         }
 
         /**
-         * DB住所の文字数分だけ、
-         * 元の入力から詳細住所位置を求める。
+         * 比較用文字列の長さ。
          */
-        $inputLength =
-            mb_strlen($input);
-
         $baseLength =
             mb_strlen($baseWithoutSpaces);
+
+        $inputLength =
+            mb_strlen($input);
 
         $inputIndex = 0;
         $matchedLength = 0;
@@ -1425,6 +1544,7 @@ class AddressController extends Controller
                 )
             ) {
                 $inputIndex++;
+
                 continue;
             }
 
@@ -1468,10 +1588,6 @@ class AddressController extends Controller
 
         /**
          * 住所番号部分で使用するハイフンだけ統一する。
-         *
-         * 「ー」は日本語の長音にも使われるため、
-         * normalizeAddressText()では
-         * 全体を「-」に変換しない。
          */
         $detail =
             $this->normalizeAddressHyphens(
@@ -1901,6 +2017,13 @@ class AddressController extends Controller
      * 住所全体からDBを検索する。
      *
      * DB側の半角・全角スペースを無視する。
+     *
+     * さらに、
+     *
+     * 緑ヶ丘
+     * 緑ケ丘
+     *
+     * を比較時だけ同一視する。
      */
     private function findAddressesByFullAddress(
         string $normalizedAddress
@@ -1909,21 +2032,75 @@ class AddressController extends Controller
             return collect();
         }
 
+        /**
+         * 入力側も比較用に正規化。
+         */
+        $searchValue =
+            $this->normalizeAddressForComparison(
+                $normalizedAddress
+            );
+
+        if ($searchValue === '') {
+            return collect();
+        }
+
+        /**
+         * SQLite対応。
+         *
+         * DB：
+         * 緑ケ丘
+         *
+         * 入力：
+         * 緑ヶ丘
+         *
+         * ↓
+         *
+         * 比較時は両方とも
+         * 緑ケ丘
+         */
         return PostalCode::whereRaw(
-            "REPLACE(REPLACE(prefecture, ' ', ''), '　', '') ||
-             REPLACE(REPLACE(city, ' ', ''), '　', '') ||
-             REPLACE(REPLACE(town, ' ', ''), '　', '')
-             LIKE ?",
+            "
+            REPLACE(
+                REPLACE(
+                    REPLACE(prefecture, ' ', ''),
+                    '　',
+                    ''
+                ),
+                'ヶ',
+                'ケ'
+            )
+            ||
+            REPLACE(
+                REPLACE(
+                    REPLACE(city, ' ', ''),
+                    '　',
+                    ''
+                ),
+                'ヶ',
+                'ケ'
+            )
+            ||
+            REPLACE(
+                REPLACE(
+                    REPLACE(town, ' ', ''),
+                    '　',
+                    ''
+                ),
+                'ヶ',
+                'ケ'
+            )
+            LIKE ?
+            ",
             [
-                '%' .
-                $normalizedAddress .
-                '%'
+                '%' . $searchValue . '%',
             ]
         )->get();
     }
 
     /**
      * 住所全体からDBを1件取得する。
+     *
+     * 「緑ヶ丘」と「緑ケ丘」を同一視する。
      */
     private function findFirstAddressByFullAddress(
         string $normalizedAddress
@@ -1932,29 +2109,59 @@ class AddressController extends Controller
             return null;
         }
 
+        /**
+         * 入力側も比較用に正規化。
+         */
+        $searchValue =
+            $this->normalizeAddressForComparison(
+                $normalizedAddress
+            );
+
+        if ($searchValue === '') {
+            return null;
+        }
+
         return PostalCode::whereRaw(
-            "REPLACE(REPLACE(prefecture, ' ', ''), '　', '') ||
-             REPLACE(REPLACE(city, ' ', ''), '　', '') ||
-             REPLACE(REPLACE(town, ' ', ''), '　', '')
-             LIKE ?",
+            "
+            REPLACE(
+                REPLACE(
+                    REPLACE(prefecture, ' ', ''),
+                    '　',
+                    ''
+                ),
+                'ヶ',
+                'ケ'
+            )
+            ||
+            REPLACE(
+                REPLACE(
+                    REPLACE(city, ' ', ''),
+                    '　',
+                    ''
+                ),
+                'ヶ',
+                'ケ'
+            )
+            ||
+            REPLACE(
+                REPLACE(
+                    REPLACE(town, ' ', ''),
+                    '　',
+                    ''
+                ),
+                'ヶ',
+                'ケ'
+            )
+            LIKE ?
+            ",
             [
-                '%' .
-                $normalizedAddress .
-                '%'
+                '%' . $searchValue . '%',
             ]
         )->first();
     }
 
     /**
      * 入力文字列を全角・半角を含めて正規化する。
-     *
-     * 例：
-     *
-     * 仙台市　太白区　緑ヶ丘
-     * 仙台市 太白区 緑ヶ丘
-     * 仙台市太白区緑ヶ丘
-     *
-     * を同じ検索基準で扱う。
      */
     private function normalizeAddressText(
         string $text
@@ -2067,10 +2274,13 @@ class AddressController extends Controller
     /**
      * DB住所比較用の正規化。
      *
-     * 「ヶ」「ケ」のような表記揺れを
-     * 比較時だけある程度吸収する。
+     * 比較時のみ以下を同一視する。
      *
-     * ※ 出力文字列自体は変更しない。
+     * ヶ → ケ
+     * ｹ → ケ
+     * ヵ → カ
+     *
+     * 出力文字列自体は変更しない。
      */
     private function normalizeAddressForComparison(
         string $text
@@ -2085,18 +2295,21 @@ class AddressController extends Controller
         }
 
         /**
-         * 住所名でよくある
-         * ヶ / ケ の表記揺れを比較用に統一。
-         *
-         * 出力には使用しない。
+         * 住所名でよくある表記揺れを
+         * 比較用に統一。
          */
         $text =
             str_replace(
                 [
                     'ヶ',
                     'ｹ',
+                    'ヵ',
                 ],
-                'ケ',
+                [
+                    'ケ',
+                    'ケ',
+                    'カ',
+                ],
                 $text
             );
 
@@ -2105,8 +2318,6 @@ class AddressController extends Controller
 
     /**
      * 郵便番号を正規化する。
-     *
-     * 例：
      *
      * 980-0811
      * 980－0811
@@ -2202,7 +2413,7 @@ class AddressController extends Controller
      *
      * 注意：
      * 「ー」は長音符にもなるため、
-     * 住所詳細の数字周辺でのみ利用する。
+     * 詳細住所の数字周辺でのみ利用する。
      */
     private function normalizeAddressHyphens(
         string $text
@@ -2242,10 +2453,6 @@ class AddressController extends Controller
 
     /**
      * DBのromajiを優先して住所名を変換する。
-     *
-     * 漢字の住所名を
-     * JapaneseRomajiServiceへ直接渡して
-     * 壊すことを防ぐ。
      */
     private function resolvePlaceRomaji(
         string $original,
