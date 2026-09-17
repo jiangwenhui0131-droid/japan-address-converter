@@ -5,6 +5,7 @@
 <head>
 
 <meta charset="UTF-8">
+
 <link rel="icon" href="{{ asset('images/favicon.png') }}?v=2" type="image/png">
 
 <meta
@@ -21,17 +22,12 @@
 
 <link
     rel="canonical"
-    href="https://japanaddresses.com/"
+    href="{{ secure_url('/') }}"
 >
 
 <meta
     name="robots"
     content="index, follow"
->
-
-<link
-    rel="canonical"
-    href="{{ secure_url('/') }}"
 >
 
 <!-- OGP -->
@@ -341,11 +337,9 @@
                             </div>
 
                             <div class="result-japanese">
-
                                 {{ $address->prefecture }}
                                 {{ $address->city }}
                                 {{ $address->town }}
-
                             </div>
 
                             <div
@@ -357,9 +351,19 @@
 
                             <div class="result-romaji">
 
-                                {{ $address->town_romaji }},
-                                {{ $address->city_romaji }},
-                                {{ $address->prefecture_romaji }}
+                                @if(!empty($address->town_romaji))
+                                    {{ $address->town_romaji }}
+                                @endif
+
+                                @if(!empty($address->city_romaji))
+                                    @if(!empty($address->town_romaji)), @endif
+                                    {{ $address->city_romaji }}
+                                @endif
+
+                                @if(!empty($address->prefecture_romaji))
+                                    @if(!empty($address->town_romaji) || !empty($address->city_romaji)), @endif
+                                    {{ $address->prefecture_romaji }}
+                                @endif
 
                             </div>
 
@@ -377,11 +381,47 @@
                                     id="postal-result-{{ $index }}"
                                 >
 
-                                    {{ $address->international_town }},
-                                    {{ $address->international_city }},
-                                    {{ $address->international_prefecture }},
-                                    {{ $address->formatted_postal_code }},
-                                    Japan
+                                    @php
+                                        $postalInternationalParts = [];
+
+                                        if (!empty($address->international_town)) {
+                                            $postalInternationalParts[] = $address->international_town;
+                                        }
+
+                                        if (!empty($address->international_number)) {
+                                            $postalInternationalParts[] = $address->international_number;
+                                        }
+
+                                        if (!empty($address->international_building)) {
+                                            $postalInternationalParts[] = $address->international_building;
+                                        }
+
+                                        if (!empty($address->international_room)) {
+                                            $postalInternationalParts[] = $address->international_room;
+                                        }
+
+                                        if (!empty($address->international_city)) {
+                                            $postalInternationalParts[] = $address->international_city;
+                                        }
+
+                                        if (!empty($address->international_prefecture)) {
+                                            $postalInternationalParts[] = $address->international_prefecture;
+                                        }
+
+                                        if (!empty($address->formatted_postal_code)) {
+                                            $postalInternationalParts[] = $address->formatted_postal_code;
+                                        }
+
+                                        $postalInternationalAddress = implode(', ', $postalInternationalParts);
+                                    @endphp
+
+                                    {{ $postalInternationalAddress }}
+
+                                    @if(!empty($postalInternationalAddress))
+                                        , Japan
+                                    @else
+                                        Japan
+                                    @endif
 
                                 </div>
 
@@ -528,9 +568,29 @@
 
                             <div class="result-japanese">
 
-                                {{ $address->prefecture }}
-                                {{ $address->city }}
-                                {{ $address->town }}
+                                @if(!empty($address->original_japanese_address))
+
+                                    {{ $address->original_japanese_address }}
+
+                                @else
+
+                                    {{ $address->prefecture }}
+                                    {{ $address->city }}
+                                    {{ $address->town }}
+
+                                    @if(!empty($address->international_number))
+                                        {{ $address->international_number }}
+                                    @endif
+
+                                    @if(!empty($address->international_building))
+                                        {{ $address->international_building }}
+                                    @endif
+
+                                    @if(!empty($address->international_room))
+                                        {{ $address->international_room }}
+                                    @endif
+
+                                @endif
 
                             </div>
 
@@ -543,9 +603,19 @@
 
                             <div class="result-romaji">
 
-                                {{ $address->town_romaji }},
-                                {{ $address->city_romaji }},
-                                {{ $address->prefecture_romaji }}
+                                @if(!empty($address->town_romaji))
+                                    {{ $address->town_romaji }}
+                                @endif
+
+                                @if(!empty($address->city_romaji))
+                                    @if(!empty($address->town_romaji)), @endif
+                                    {{ $address->city_romaji }}
+                                @endif
+
+                                @if(!empty($address->prefecture_romaji))
+                                    @if(!empty($address->town_romaji) || !empty($address->city_romaji)), @endif
+                                    {{ $address->prefecture_romaji }}
+                                @endif
 
                             </div>
 
@@ -563,11 +633,47 @@
                                     id="address-result-{{ $index }}"
                                 >
 
-                                    {{ $address->international_town }},
-                                    {{ $address->international_city }},
-                                    {{ $address->international_prefecture }},
-                                    {{ $address->formatted_postal_code }},
-                                    Japan
+                                    @php
+                                        $addressInternationalParts = [];
+
+                                        if (!empty($address->international_number)) {
+                                            $addressInternationalParts[] = $address->international_number;
+                                        }
+
+                                        if (!empty($address->international_building)) {
+                                            $addressInternationalParts[] = $address->international_building;
+                                        }
+
+                                        if (!empty($address->international_room)) {
+                                            $addressInternationalParts[] = $address->international_room;
+                                        }
+
+                                        if (!empty($address->international_town)) {
+                                            $addressInternationalParts[] = $address->international_town;
+                                        }
+
+                                        if (!empty($address->international_city)) {
+                                            $addressInternationalParts[] = $address->international_city;
+                                        }
+
+                                        if (!empty($address->international_prefecture)) {
+                                            $addressInternationalParts[] = $address->international_prefecture;
+                                        }
+
+                                        if (!empty($address->formatted_postal_code)) {
+                                            $addressInternationalParts[] = $address->formatted_postal_code;
+                                        }
+
+                                        $addressInternationalAddress = implode(', ', $addressInternationalParts);
+                                    @endphp
+
+                                    {{ $addressInternationalAddress }}
+
+                                    @if(!empty($addressInternationalAddress))
+                                        , Japan
+                                    @else
+                                        Japan
+                                    @endif
 
                                 </div>
 
@@ -649,7 +755,6 @@
                 </p>
 
                 <div class="csv-example">郵便番号,住所
-
 060-0041,北海道札幌市中央区大通東
 080-0111,北海道河東郡音更町木野大通東</div>
 
@@ -833,236 +938,232 @@
          GUIDE
     ====================================================== -->
 
-    <!-- =====================================================
-     GUIDE
-====================================================== -->
+    <section class="guide">
 
-<section class="guide">
-
-    <h2
-        class="guide-title"
-        data-i18n="guideTitle"
-    >
-        日本住所英語変換の使い方
-    </h2>
-
-    <div class="guide-item">
-
-        <h3
-            class="guide-question"
-            data-i18n="guide1Question"
+        <h2
+            class="guide-title"
+            data-i18n="guideTitle"
         >
-            郵便番号から住所を変換する
-        </h3>
+            日本住所英語変換の使い方
+        </h2>
 
-        <p
-            class="guide-answer"
-            data-i18n="guide1Answer"
+        <div class="guide-item">
+
+            <h3
+                class="guide-question"
+                data-i18n="guide1Question"
+            >
+                郵便番号から住所を変換する
+            </h3>
+
+            <p
+                class="guide-answer"
+                data-i18n="guide1Answer"
+            >
+                郵便番号を入力して「変換する」を押してください。
+                日本語住所と海外向けの住所表記が表示されます。
+            </p>
+
+        </div>
+
+
+        <div class="guide-item">
+
+            <h3
+                class="guide-question"
+                data-i18n="guide2Question"
+            >
+                ハイフンなしの郵便番号も使えますか？
+            </h3>
+
+            <p
+                class="guide-answer"
+                data-i18n="guide2Answer"
+            >
+                はい。「060-0041」と「0600041」のどちらでも入力できます。
+            </p>
+
+        </div>
+
+
+        <div class="guide-item">
+
+            <h3
+                class="guide-question"
+                data-i18n="guide3Question"
+            >
+                日本語住所から検索できますか？
+            </h3>
+
+            <p
+                class="guide-answer"
+                data-i18n="guide3Answer"
+            >
+                はい。都道府県、市区町村、町名などの日本語住所を入力して検索できます。
+            </p>
+
+        </div>
+
+
+        <div class="guide-item">
+
+            <h3
+                class="guide-question"
+                data-i18n="guide4Question"
+            >
+                CSVで一括変換できますか？
+            </h3>
+
+            <p
+                class="guide-answer"
+                data-i18n="guide4Answer"
+            >
+                はい。CSVファイルをアップロードして、
+                100件まで無料でまとめて変換できます。
+                101件以上の変換については、有料サービスをご利用ください。
+            </p>
+
+        </div>
+
+
+        <div class="guide-item">
+
+            <h3
+                class="guide-question"
+                data-i18n="guide5Question"
+            >
+                変換した住所はコピーできますか？
+            </h3>
+
+            <p
+                class="guide-answer"
+                data-i18n="guide5Answer"
+            >
+                変換結果の「コピー」ボタンを押すと、
+                海外向け住所をそのままコピーできます。
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             INTERNATIONAL SHIPPING FAQ
+        ================================================== -->
+
+        <h2
+            class="guide-title"
+            data-i18n="guideFaqTitle"
         >
-            郵便番号を入力して「変換する」を押してください。
-            日本語住所と海外向けの住所表記が表示されます。
-        </p>
-
-    </div>
+            海外発送・住所表記 FAQ
+        </h2>
 
 
-    <div class="guide-item">
+        <div class="guide-item">
 
-        <h3
-            class="guide-question"
-            data-i18n="guide2Question"
-        >
-            ハイフンなしの郵便番号も使えますか？
-        </h3>
+            <h3
+                class="guide-question"
+                data-i18n="guide6Question"
+            >
+                海外に荷物を送るとき、住所はどう書けばいいですか？
+            </h3>
 
-        <p
-            class="guide-answer"
-            data-i18n="guide2Answer"
-        >
-            はい。「060-0041」と「0600041」のどちらでも入力できます。
-        </p>
+            <p
+                class="guide-answer"
+                data-i18n="guide6Answer"
+            >
+                日本の住所を海外向けに書く場合は、
+                番地・町名から市区町村、都道府県、郵便番号、国名の順に並べる形式がよく使われます。
+                このサイトでは、日本語住所を入力して海外向けの住所表記を確認できます。
+            </p>
 
-    </div>
-
-
-    <div class="guide-item">
-
-        <h3
-            class="guide-question"
-            data-i18n="guide3Question"
-        >
-            日本語住所から検索できますか？
-        </h3>
-
-        <p
-            class="guide-answer"
-            data-i18n="guide3Answer"
-        >
-            はい。都道府県、市区町村、町名などの日本語住所を入力して検索できます。
-        </p>
-
-    </div>
+        </div>
 
 
-    <div class="guide-item">
+        <div class="guide-item">
 
-        <h3
-            class="guide-question"
-            data-i18n="guide4Question"
-        >
-            CSVで一括変換できますか？
-        </h3>
+            <h3
+                class="guide-question"
+                data-i18n="guide7Question"
+            >
+                海外発送では「Japan」を付ける必要がありますか？
+            </h3>
 
-        <p
-            class="guide-answer"
-            data-i18n="guide4Answer"
-        >
-            はい。CSVファイルをアップロードして、
-            100件まで無料でまとめて変換できます。
-            101件以上の変換については、有料サービスをご利用ください。
-        </p>
+            <p
+                class="guide-answer"
+                data-i18n="guide7Answer"
+            >
+                海外向けの宛先では国名を明記することが一般的です。
+                日本の住所を海外向けに使用する場合は、
+                最後に「Japan」を付けると国が分かりやすくなります。
+            </p>
 
-    </div>
-
-
-    <div class="guide-item">
-
-        <h3
-            class="guide-question"
-            data-i18n="guide5Question"
-        >
-            変換した住所はコピーできますか？
-        </h3>
-
-        <p
-            class="guide-answer"
-            data-i18n="guide5Answer"
-        >
-            変換結果の「コピー」ボタンを押すと、
-            海外向け住所をそのままコピーできます。
-        </p>
-
-    </div>
+        </div>
 
 
-    <!-- =================================================
-         INTERNATIONAL SHIPPING FAQ
-    ================================================== -->
+        <div class="guide-item">
 
-    <h2
-        class="guide-title"
-        data-i18n="guideFaqTitle"
-    >
-        海外発送・住所表記 FAQ
-    </h2>
+            <h3
+                class="guide-question"
+                data-i18n="guide8Question"
+            >
+                EMS・国際郵便・海外配送の住所入力に使えますか？
+            </h3>
 
+            <p
+                class="guide-answer"
+                data-i18n="guide8Answer"
+            >
+                はい。EMS、国際郵便、海外通販サイトなどで
+                日本の住所を英語・ローマ字表記にする際の参考として利用できます。
+                ただし、入力形式や必要項目はサービスによって異なるため、
+                発送時は利用する配送会社やサービスの案内も確認してください。
+            </p>
 
-    <div class="guide-item">
-
-        <h3
-            class="guide-question"
-            data-i18n="guide6Question"
-        >
-            海外に荷物を送るとき、住所はどう書けばいいですか？
-        </h3>
-
-        <p
-            class="guide-answer"
-            data-i18n="guide6Answer"
-        >
-            日本の住所を海外向けに書く場合は、
-            番地・町名から市区町村、都道府県、郵便番号、国名の順に並べる形式がよく使われます。
-            このサイトでは、日本語住所を入力して海外向けの住所表記を確認できます。
-        </p>
-
-    </div>
+        </div>
 
 
-    <div class="guide-item">
+        <div class="guide-item">
 
-        <h3
-            class="guide-question"
-            data-i18n="guide7Question"
-        >
-            海外発送では「Japan」を付ける必要がありますか？
-        </h3>
+            <h3
+                class="guide-question"
+                data-i18n="guide9Question"
+            >
+                代購・越境EC・業務用にも利用できますか？
+            </h3>
 
-        <p
-            class="guide-answer"
-            data-i18n="guide7Answer"
-        >
-            海外向けの宛先では国名を明記することが一般的です。
-            日本の住所を海外向けに使用する場合は、
-            最後に「Japan」を付けると国が分かりやすくなります。
-        </p>
+            <p
+                class="guide-answer"
+                data-i18n="guide9Answer"
+            >
+                はい。代購、越境EC、海外発送業務など、
+                複数の日本住所を海外向けに整理する場面でも利用できます。
+                複数件を処理する場合はCSV一括変換が便利です。
+            </p>
 
-    </div>
-
-
-    <div class="guide-item">
-
-        <h3
-            class="guide-question"
-            data-i18n="guide8Question"
-        >
-            EMS・国際郵便・海外配送の住所入力に使えますか？
-        </h3>
-
-        <p
-            class="guide-answer"
-            data-i18n="guide8Answer"
-        >
-            はい。EMS、国際郵便、海外通販サイトなどで
-            日本の住所を英語・ローマ字表記にする際の参考として利用できます。
-            ただし、入力形式や必要項目はサービスによって異なるため、
-            発送時は利用する配送会社やサービスの案内も確認してください。
-        </p>
-
-    </div>
+        </div>
 
 
-    <div class="guide-item">
+        <div class="guide-item">
 
-        <h3
-            class="guide-question"
-            data-i18n="guide9Question"
-        >
-            代購・越境EC・業務用にも利用できますか？
-        </h3>
+            <h3
+                class="guide-question"
+                data-i18n="guide10Question"
+            >
+                海外発送では住所以外に何を確認すればいいですか？
+            </h3>
 
-        <p
-            class="guide-answer"
-            data-i18n="guide9Answer"
-        >
-            はい。代購、越境EC、海外発送業務など、
-            複数の日本住所を海外向けに整理する場面でも利用できます。
-            複数件を処理する場合はCSV一括変換が便利です。
-        </p>
+            <p
+                class="guide-answer"
+                data-i18n="guide10Answer"
+            >
+                国際配送では、宛名、電話番号、内容品、数量、重量、価格などの情報が必要になる場合があります。
+                税関申告などの手続きもあるため、住所だけでなく、
+                利用する配送会社・サービスの最新の案内を確認してください。
+            </p>
 
-    </div>
+        </div>
 
-
-    <div class="guide-item">
-
-        <h3
-            class="guide-question"
-            data-i18n="guide10Question"
-        >
-            海外発送では住所以外に何を確認すればいいですか？
-        </h3>
-
-        <p
-            class="guide-answer"
-            data-i18n="guide10Answer"
-        >
-            国際配送では、宛名、電話番号、内容品、数量、重量、価格などの情報が必要になる場合があります。
-            税関申告などの手続きもあるため、住所だけでなく、
-            利用する配送会社・サービスの最新の案内を確認してください。
-        </p>
-
-    </div>
-
-</section>
+    </section>
 
 
     <!-- =====================================================
@@ -1114,21 +1215,27 @@
         </nav>
 
         <div>
+
             <span data-i18n="operator">
                 運営者：Liuweijie
             </span>
+
         </div>
 
         <div>
+
             <span data-i18n="serviceName">
                 サービス名：Japan Address Converter
             </span>
+
         </div>
 
         <div>
+
             <span data-i18n="operationType">
                 運営形態：個人運営
             </span>
+
         </div>
 
         <div>
@@ -1144,10 +1251,13 @@
         </div>
 
         <div>
+
             © {{ date('Y') }}
+
             <span data-i18n="copyright">
                 日本住所英語変換
             </span>
+
         </div>
 
     </footer>
@@ -1157,11 +1267,13 @@
 </div>
 
 <script>
+
     window.addressConverterConfig = {
         searchType: @json($searchType ?? ''),
         hasCsvResults: @json(isset($csvResults) && count($csvResults) > 0),
         hasCsvError: @json(!empty($csv_error))
     };
+
 </script>
 
 <script src="{{ asset('js/address-converter.js') }}"></script>
