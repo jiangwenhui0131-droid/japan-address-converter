@@ -833,110 +833,236 @@
          GUIDE
     ====================================================== -->
 
-    <section class="guide">
+    <!-- =====================================================
+     GUIDE
+====================================================== -->
 
-        <h2
-            class="guide-title"
-            data-i18n="guideTitle"
+<section class="guide">
+
+    <h2
+        class="guide-title"
+        data-i18n="guideTitle"
+    >
+        日本住所英語変換の使い方
+    </h2>
+
+    <div class="guide-item">
+
+        <h3
+            class="guide-question"
+            data-i18n="guide1Question"
         >
-            日本住所英語変換の使い方
-        </h2>
+            郵便番号から住所を変換する
+        </h3>
 
-        <div class="guide-item">
+        <p
+            class="guide-answer"
+            data-i18n="guide1Answer"
+        >
+            郵便番号を入力して「変換する」を押してください。
+            日本語住所と海外向けの住所表記が表示されます。
+        </p>
 
-            <h3
-                class="guide-question"
-                data-i18n="guide1Question"
-            >
-                郵便番号から住所を変換する
-            </h3>
+    </div>
 
-            <p
-                class="guide-answer"
-                data-i18n="guide1Answer"
-            >
-                郵便番号を入力して「変換する」を押してください。
-                日本語住所と海外向けの住所表記が表示されます。
-            </p>
 
-        </div>
+    <div class="guide-item">
 
-        <div class="guide-item">
+        <h3
+            class="guide-question"
+            data-i18n="guide2Question"
+        >
+            ハイフンなしの郵便番号も使えますか？
+        </h3>
 
-            <h3
-                class="guide-question"
-                data-i18n="guide2Question"
-            >
-                ハイフンなしの郵便番号も使えますか？
-            </h3>
+        <p
+            class="guide-answer"
+            data-i18n="guide2Answer"
+        >
+            はい。「060-0041」と「0600041」のどちらでも入力できます。
+        </p>
 
-            <p
-                class="guide-answer"
-                data-i18n="guide2Answer"
-            >
-                はい。「060-0041」と「0600041」のどちらでも入力できます。
-            </p>
+    </div>
 
-        </div>
 
-        <div class="guide-item">
+    <div class="guide-item">
 
-            <h3
-                class="guide-question"
-                data-i18n="guide3Question"
-            >
-                日本語住所から検索できますか？
-            </h3>
+        <h3
+            class="guide-question"
+            data-i18n="guide3Question"
+        >
+            日本語住所から検索できますか？
+        </h3>
 
-            <p
-                class="guide-answer"
-                data-i18n="guide3Answer"
-            >
-                はい。都道府県、市区町村、町名などの日本語住所を入力して検索できます。
-            </p>
+        <p
+            class="guide-answer"
+            data-i18n="guide3Answer"
+        >
+            はい。都道府県、市区町村、町名などの日本語住所を入力して検索できます。
+        </p>
 
-        </div>
+    </div>
 
-        <div class="guide-item">
 
-            <h3
-                class="guide-question"
-                data-i18n="guide4Question"
-            >
-                CSVで一括変換できますか？
-            </h3>
+    <div class="guide-item">
 
-            <p
-                class="guide-answer"
-                data-i18n="guide4Answer"
-            >
-                はい。CSVファイルをアップロードして、
-                100件まで無料でまとめて変換できます。
-                101件以上の変換については、有料サービスをご利用ください。
-            </p>
+        <h3
+            class="guide-question"
+            data-i18n="guide4Question"
+        >
+            CSVで一括変換できますか？
+        </h3>
 
-        </div>
+        <p
+            class="guide-answer"
+            data-i18n="guide4Answer"
+        >
+            はい。CSVファイルをアップロードして、
+            100件まで無料でまとめて変換できます。
+            101件以上の変換については、有料サービスをご利用ください。
+        </p>
 
-        <div class="guide-item">
+    </div>
 
-            <h3
-                class="guide-question"
-                data-i18n="guide5Question"
-            >
-                変換した住所はコピーできますか？
-            </h3>
 
-            <p
-                class="guide-answer"
-                data-i18n="guide5Answer"
-            >
-                変換結果の「コピー」ボタンを押すと、
-                海外向け住所をそのままコピーできます。
-            </p>
+    <div class="guide-item">
 
-        </div>
+        <h3
+            class="guide-question"
+            data-i18n="guide5Question"
+        >
+            変換した住所はコピーできますか？
+        </h3>
 
-    </section>
+        <p
+            class="guide-answer"
+            data-i18n="guide5Answer"
+        >
+            変換結果の「コピー」ボタンを押すと、
+            海外向け住所をそのままコピーできます。
+        </p>
+
+    </div>
+
+
+    <!-- =================================================
+         INTERNATIONAL SHIPPING FAQ
+    ================================================== -->
+
+    <h2
+        class="guide-title"
+        data-i18n="guideFaqTitle"
+    >
+        海外発送・住所表記 FAQ
+    </h2>
+
+
+    <div class="guide-item">
+
+        <h3
+            class="guide-question"
+            data-i18n="guide6Question"
+        >
+            海外に荷物を送るとき、住所はどう書けばいいですか？
+        </h3>
+
+        <p
+            class="guide-answer"
+            data-i18n="guide6Answer"
+        >
+            日本の住所を海外向けに書く場合は、
+            番地・町名から市区町村、都道府県、郵便番号、国名の順に並べる形式がよく使われます。
+            このサイトでは、日本語住所を入力して海外向けの住所表記を確認できます。
+        </p>
+
+    </div>
+
+
+    <div class="guide-item">
+
+        <h3
+            class="guide-question"
+            data-i18n="guide7Question"
+        >
+            海外発送では「Japan」を付ける必要がありますか？
+        </h3>
+
+        <p
+            class="guide-answer"
+            data-i18n="guide7Answer"
+        >
+            海外向けの宛先では国名を明記することが一般的です。
+            日本の住所を海外向けに使用する場合は、
+            最後に「Japan」を付けると国が分かりやすくなります。
+        </p>
+
+    </div>
+
+
+    <div class="guide-item">
+
+        <h3
+            class="guide-question"
+            data-i18n="guide8Question"
+        >
+            EMS・国際郵便・海外配送の住所入力に使えますか？
+        </h3>
+
+        <p
+            class="guide-answer"
+            data-i18n="guide8Answer"
+        >
+            はい。EMS、国際郵便、海外通販サイトなどで
+            日本の住所を英語・ローマ字表記にする際の参考として利用できます。
+            ただし、入力形式や必要項目はサービスによって異なるため、
+            発送時は利用する配送会社やサービスの案内も確認してください。
+        </p>
+
+    </div>
+
+
+    <div class="guide-item">
+
+        <h3
+            class="guide-question"
+            data-i18n="guide9Question"
+        >
+            代購・越境EC・業務用にも利用できますか？
+        </h3>
+
+        <p
+            class="guide-answer"
+            data-i18n="guide9Answer"
+        >
+            はい。代購、越境EC、海外発送業務など、
+            複数の日本住所を海外向けに整理する場面でも利用できます。
+            複数件を処理する場合はCSV一括変換が便利です。
+        </p>
+
+    </div>
+
+
+    <div class="guide-item">
+
+        <h3
+            class="guide-question"
+            data-i18n="guide10Question"
+        >
+            海外発送では住所以外に何を確認すればいいですか？
+        </h3>
+
+        <p
+            class="guide-answer"
+            data-i18n="guide10Answer"
+        >
+            国際配送では、宛名、電話番号、内容品、数量、重量、価格などの情報が必要になる場合があります。
+            税関申告などの手続きもあるため、住所だけでなく、
+            利用する配送会社・サービスの最新の案内を確認してください。
+        </p>
+
+    </div>
+
+</section>
 
 
     <!-- =====================================================
