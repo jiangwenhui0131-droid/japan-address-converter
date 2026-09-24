@@ -11,8 +11,9 @@ class JapaneseRomajiService
      * - 平假名
      * - 片假名
      *
-     * 汉字不在这里强制转换。
-     * 汉字地名应优先使用 PostalCode 数据中的 *_romaji。
+     * 汉字：
+     * - 如果 MeCab 可用，则先转换成读音
+     * - 然后再通过下面的假名转换逻辑转换成罗马字
      */
     public function convert(string $text): string
     {
@@ -20,6 +21,17 @@ class JapaneseRomajiService
 
         if ($text === '') {
             return '';
+        }
+
+        /**
+         * 汉字が含まれている場合は、
+         * MeCabで読み仮名に変換
+         */
+        if (
+            $this->containsKanji($text) &&
+            extension_loaded('mecab')
+        ) {
+            $text = $this->convertKanjiWithMecab($text);
         }
 
         // 平假名 → 片假名
@@ -218,23 +230,6 @@ class JapaneseRomajiService
             'ヮ' => 'wa',
 
             'ヴ' => 'vu',
-
-            /**
-             * 注意：
-             *
-             * ヶ / ヵ 不能直接当普通假名转换。
-             *
-             * 例如：
-             * 緑ヶ丘
-             *
-             * 如果这里写：
-             * ヶ => ke
-             *
-             * 就会得到：
-             * 緑ke丘
-             *
-             * 这是错误的。
-             */
         ];
 
         $chars = mb_str_split(
@@ -244,6 +239,7 @@ class JapaneseRomajiService
         );
 
         $result = '';
+
         $count = count($chars);
 
         for ($i = 0; $i < $count; $i++) {
@@ -257,7 +253,9 @@ class JapaneseRomajiService
 
                 if (isset($digraphs[$pair])) {
                     $result .= $digraphs[$pair];
+
                     $i++;
+
                     continue;
                 }
             }
@@ -325,6 +323,7 @@ class JapaneseRomajiService
                 )
             ) {
                 $result .= $char;
+
                 continue;
             }
 
@@ -338,6 +337,7 @@ class JapaneseRomajiService
                 )
             ) {
                 $result .= $char;
+
                 continue;
             }
 
@@ -346,6 +346,7 @@ class JapaneseRomajiService
              */
             if ($char === ' ') {
                 $result .= ' ';
+
                 continue;
             }
 
@@ -354,14 +355,15 @@ class JapaneseRomajiService
              *
              * 这里保留原字符。
              *
-             * 真正的地名读法应由 PostalCode
-             * 的 town_romaji 等数据决定。
+             * 真正的地名读法应优先由
+             * PostalCode 的 town_romaji 等数据决定。
              */
             if (
                 $char === 'ヶ' ||
                 $char === 'ヵ'
             ) {
                 $result .= $char;
+
                 continue;
             }
 
@@ -370,12 +372,13 @@ class JapaneseRomajiService
              */
             if (isset($kana[$char])) {
                 $result .= $kana[$char];
+
                 continue;
             }
 
             /**
              * 其他字符：
-             * 汉字、标点、括号等保持原样。
+             * 汉字、标点、括号、- 等保持原样。
              */
             $result .= $char;
         }
@@ -384,7 +387,126 @@ class JapaneseRomajiService
     }
 
     /**
-     * 输入地址/名称统一。
+     * 判断字符串中是否包含汉字
+     */
+    private function containsKanji(string $text): bool
+    {
+        return preg_match(
+            '/[\x{3400}-\x{4DBF}\x{4E00}-\x{9FFF}]/u',
+            $text
+        ) === 1;
+    }
+
+    /**
+     * 使用 MeCab 将汉字转换成读音
+     *
+     * 例如：
+     *
+     * 東京都新宿区西新宿
+     *
+     * ↓
+     *
+     * トウキョウトシンジュククニシシンジュク
+     */
+    private function convertKanjiWithMecab(string $text): string
+    {
+        try {
+            $tagger = new \MeCab\Tagger();
+
+            $parsed = $tagger->parse($text);
+
+            if (
+                $parsed === false ||
+                $parsed === ''
+            ) {
+                return $text;
+            }
+
+            $lines = preg_split(
+                '/\r\n|\r|\n/',
+                trim($parsed)
+            );
+
+            $converted = '';
+
+            foreach ($lines as $line) {
+                $line = trim($line);
+
+                if (
+                    $line === '' ||
+                    $line === 'EOS'
+                ) {
+                    continue;
+                }
+
+                $parts = explode(
+                    "\t",
+                    $line
+                );
+
+                /**
+                 * 如果这一行没有正常的 MeCab 数据，
+                 * 就直接保留原文字。
+                 */
+                if (count($parts) < 2) {
+                    $converted .= $parts[0];
+
+                    continue;
+                }
+
+                $surface = $parts[0];
+
+                $features = explode(
+                    ',',
+                    $parts[1]
+                );
+
+                /**
+                 * MeCab IPA词典：
+                 *
+                 * [0] 品詞
+                 * [1] 品詞細分類1
+                 * [2] 品詞細分類2
+                 * [3] 品詞細分類3
+                 * [4] 活用形
+                 * [5] 活用型
+                 * [6] 原形
+                 * [7] 読み
+                 * [8] 発音
+                 *
+                 * 例如：
+                 *
+                 * 東京
+                 * ↓
+                 * 東京,名詞,固有名詞,地域,一般,*,*,東京,トウキョウ,トーキョー
+                 */
+                if (
+                    isset($features[7]) &&
+                    $features[7] !== '' &&
+                    $features[7] !== '*'
+                ) {
+                    $converted .= $features[7];
+                } else {
+                    /**
+                     * 数字、符号等 MeCab 没有读音时，
+                     * 保留原字符。
+                     */
+                    $converted .= $surface;
+                }
+            }
+
+            return $converted;
+        } catch (\Throwable $e) {
+            /**
+             * MeCab发生异常时，
+             * 不影响原来的转换逻辑。
+             */
+            return $text;
+        }
+    }
+
+    /**
+     * 输入地址/名称统一
      */
     private function normalizeInput(string $text): string
     {
@@ -425,7 +547,7 @@ class JapaneseRomajiService
     }
 
     /**
-     * 获取目前结果最后一个元音。
+     * 获取目前结果最后一个元音
      */
     private function getLastVowel(string $text): string
     {
@@ -442,14 +564,16 @@ class JapaneseRomajiService
                 $matches
             )
         ) {
-            return strtolower($matches[1]);
+            return strtolower(
+                $matches[1]
+            );
         }
 
         return '';
     }
 
     /**
-     * 整理最终罗马字。
+     * 整理最终罗马字
      */
     private function cleanupRomaji(string $text): string
     {
@@ -464,7 +588,8 @@ class JapaneseRomajiService
         /**
          * 不在这里随便删除地址中的 -。
          *
-         * 因为：
+         * 例如：
+         *
          * 4-30-3
          *
          * 是地址番地。
