@@ -12,11 +12,15 @@ class AddressController extends Controller
 {
     private JapaneseRomajiService $romajiService;
 
+    private JapaneseKanjiReadingService $kanjiReadingService;
+
     public function __construct(
-        JapaneseRomajiService $romajiService
-    ) {
-        $this->romajiService = $romajiService;
-    }
+    JapaneseRomajiService $romajiService,
+    JapaneseKanjiReadingService $kanjiReadingService
+) {
+    $this->romajiService = $romajiService;
+    $this->kanjiReadingService = $kanjiReadingService;
+}
 
     /**
      * 住所変換画面
@@ -1253,38 +1257,41 @@ class AddressController extends Controller
     }
 
     /**
-     * DBなしで住所名をromajiへ変換。
-     *
-     * 漢字はJapaneseRomajiServiceで
-     * 変換できないため、そのまま保持する。
-     */
-    private function convertIndependentPlace(
-        string $value
-    ): string {
-        $value = trim($value);
+ * DBなしで住所名をromajiへ変換。
+ *
+ * この処理ではPostalCode::query()などの
+ * DB検索を一切行わない。
+ *
+ * 漢字：
+ *   日本語漢字
+ *       ↓
+ *   MeCab
+ *       ↓
+ *   カタカナ読み
+ *       ↓
+ *   JapaneseRomajiService
+ *       ↓
+ *   ローマ字
+ */
+private function convertIndependentPlace(
+    string $value
+): string {
+    $value = trim($value);
 
-        if ($value === '') {
-            return '';
-        }
-
-        /*
-         * 漢字を含む場合は無理に変換しない。
-         */
-        if (
-            preg_match(
-                '/[\x{3400}-\x{4DBF}\x{4E00}-\x{9FFF}\x{F900}-\x{FAFF}]/u',
-                $value
-            )
-        ) {
-            return $value;
-        }
-
-        return trim(
-            $this->romajiService->convert(
-                $value
-            )
-        );
+    if ($value === '') {
+        return '';
     }
+
+    /*
+     * 漢字を含む住所の場合、
+     * MeCabで読み仮名へ変換してから
+     * ローマ字へ変換する。
+     */
+    return $this->kanjiReadingService->toRomaji(
+        $value,
+        $this->romajiService
+    );
+}
 
     /**
      * 日本語住所を海外向け形式へ整形する。
@@ -1711,12 +1718,11 @@ class AddressController extends Controller
 
         if ($building !== '') {
             $result['building'] =
-                trim(
-                    $this->romajiService->convert(
-                        $building
-                    )
-                );
-        }
+                $this->kanjiReadingService->toRomaji(
+                    $building,
+                    $this->romajiService
+        );
+}
 
         /*
          * ==================================================
