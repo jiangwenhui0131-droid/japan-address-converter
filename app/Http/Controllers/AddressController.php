@@ -7,6 +7,7 @@ use App\Services\JapaneseRomajiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Services\JapaneseKanjiReadingService;
 
 class AddressController extends Controller
 {
